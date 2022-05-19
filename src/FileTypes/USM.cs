@@ -29,6 +29,7 @@ namespace CRIDemuxer.FileTypes
             _filename = Path.GetFileName(filename);
             _key1 = key1;
             _key2 = key2;
+            Console.WriteLine($"key1={Convert.ToHexString(_key1)} key2={Convert.ToHexString(_key2)}");
             InitMask(key1, key2);
         }
         private void InitMask(byte[] key1, byte[] key2)

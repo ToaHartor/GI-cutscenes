@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.CommandLine;
+﻿using System.CommandLine;
 using CRIDemuxer.FileTypes;
 
 namespace CRIDemuxer
@@ -38,7 +33,7 @@ namespace CRIDemuxer
                 name: "-b",
                 description: "4 higher bytes of the key");
 
-            var rootCommand = new RootCommand("Sample app for System.CommandLine");
+            var rootCommand = new RootCommand("An .usm extraction tool for GI.");
             rootCommand.AddGlobalOption(outputFolderOption);
 
 
@@ -91,6 +86,8 @@ namespace CRIDemuxer
         {
             if (file == null) throw new ArgumentNullException("No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
+            if (!file.Name.EndsWith(".usm"))
+                throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
             if (key1!=null && key2!= null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
             string outputArg = (output == null)
                 ? file.Directory.FullName
@@ -125,7 +122,7 @@ namespace CRIDemuxer
             {
                 case FileInfo f:
                     // TODO add keys :shrug:
-                    if (f.Name.EndsWith(".hca")) throw new ArgumentException("File provided is not a .hca file.");
+                    if (!f.Name.EndsWith(".hca")) throw new ArgumentException("File provided is not a .hca file.");
                     HCA file = new(f.FullName);
                     file.ConvertToWAV(outputArg);
                     break;
