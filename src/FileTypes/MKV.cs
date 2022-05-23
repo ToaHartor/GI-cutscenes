@@ -56,14 +56,14 @@ namespace GICutscenes.FileTypes
             }
             _mkvmerge = mkvmergePath;
             if (!output.EndsWith(".mkv")) throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
-            _command = $@"-o ""{output}""";
+            _command = $@"-q -o ""{output}""";  // -q is for quiet mode
         }
 
         public MKV(string output, string mkvmergePath)
         {
             _mkvmerge = mkvmergePath;
             if (!output.EndsWith(".mkv")) throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
-            _command = $@"-o ""{output}""";
+            _command = $@"-q -o ""{output}""";
         }
 
 
@@ -95,8 +95,9 @@ namespace GICutscenes.FileTypes
 
         public void Merge()
         {
-            Console.WriteLine(_command);
-            Process.Start(_mkvmerge, _command);
+            //Console.WriteLine(_command);
+            Process process = Process.Start(_mkvmerge, _command);
+            process.WaitForExit();
         }
     }
 }
