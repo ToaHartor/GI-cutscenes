@@ -28,8 +28,7 @@ namespace GICutscenes.FileTypes
             //if (splitLines.Length % 3 != 0) throw new Exception($"Line count is invalid, got {splitLines.Length}");
             for (uint i = 0; i < splitLines.Length; i++)
             {
-                int subIndex;  // starts at 1
-                if (!int.TryParse(splitLines[i], out subIndex)) throw new Exception("Dialogue block doesn't start with a number");
+                if (!int.TryParse(splitLines[i], out _)) throw new Exception("Dialogue block doesn't start with a number");
                 MatchCollection m = Regex.Matches(splitLines[i + 1], @"-?\d\d:\d\d:\d\d,\d\d");
                 if (m.Count != 2) throw new Exception($"Start and stop times couldn't be correctly parsed: {splitLines[i+1]}");
                 string dialogLine = "Dialogue: 0,";
@@ -70,6 +69,7 @@ Style: Default,{_fontname},18,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,
 Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text" + Environment.NewLine;
             File.WriteAllText(filename, header);
             string content = string.Join(Environment.NewLine, _dialogLines);
+            // Correcting styles
             content = Regex.Replace(content, @"<([ubi])>", @"{\${1}1}");
             content = Regex.Replace(content, @"</([ubi])>", @"{\${1}0}");
             content = Regex.Replace(content, @"<font\s+color=""?#(\w{2})(\w{2})(\w{2})""?>", @"{\c&H$3$2$1&}");
