@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using CRIDemuxer.Utils;
+using GICutscenes.Utils;
 
-namespace CRIDemuxer.FileTypes
+namespace GICutscenes.FileTypes
 {
     struct Info
     {

@@ -1,4 +1,4 @@
-﻿namespace CRIDemuxer.FileTypes
+﻿namespace GICutscenes.FileTypes
 {
     public class Channel
     {

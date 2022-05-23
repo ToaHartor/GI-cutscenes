@@ -1,8 +1,8 @@
-﻿using CRIDemuxer.Utils;
+﻿using GICutscenes.Utils;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace CRIDemuxer.FileTypes
+namespace GICutscenes.FileTypes
 {
     /*
         * Header :   HCA\x00 or C8C3C100 if encrypted

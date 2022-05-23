@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace CRIDemuxer.FileTypes
+namespace GICutscenes.FileTypes
 {
     public struct WAVEriff // size 36
     {

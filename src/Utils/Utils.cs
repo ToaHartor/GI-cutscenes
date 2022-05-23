@@ -1,5 +1,5 @@
 ﻿
-namespace CRIDemuxer.Utils
+namespace GICutscenes.Utils
 {
     internal class Tools
     {

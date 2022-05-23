@@ -8,12 +8,17 @@ namespace GICutscenes.FileTypes
         private readonly string _fontname;
         private List<string> _dialogLines;
 
-        public ASS(string srtFile, string fontname)
+        public ASS(string srtFile, string lang)
         {
-            if (!srtFile.EndsWith(".srt") && !srtFile.EndsWith(".txt")) throw new FileLoadException("Wrong subtitles file type, requiring SRT file...");
+            if (!srtFile.EndsWith(".srt") && !srtFile.EndsWith(".txt") && !srtFile.EndsWith(".ass")) throw new FileLoadException("Wrong subtitles file type, requiring SRT file...");
             _srt = srtFile;
-            _fontname = fontname;
+            _fontname = (lang == "JP") ? "SDK_JP_Web" : "SDK_SC_Web";
             _dialogLines = new List<string>();
+        }
+
+        public bool IsAss()
+        {
+            return _srt.ToLower().EndsWith(".ass") && (File.ReadLines(_srt).First() == "[Script Info]"); // Lazy checkup
         }
 
         public void ParseSrt()
@@ -29,6 +34,7 @@ namespace GICutscenes.FileTypes
             for (uint i = 0; i < splitLines.Length; i++)
             {
                 if (!int.TryParse(splitLines[i], out _)) throw new Exception("Dialogue block doesn't start with a number");
+                if (i + 2 >= splitLines.Length) break; // Case when srt files have no line and timings (hi Ambor_Readings)
                 MatchCollection m = Regex.Matches(splitLines[i + 1], @"-?\d\d:\d\d:\d\d,\d\d");
                 if (m.Count != 2) throw new Exception($"Start and stop times couldn't be correctly parsed: {splitLines[i+1]}");
                 string dialogLine = "Dialogue: 0,";
@@ -50,7 +56,7 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public void ConvertToAss()
+        public string ConvertToAss()
         {
             string filename = _srt.Substring(0, _srt.Length - 4) + ".ass";
             string header =
@@ -77,7 +83,31 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
 
             File.AppendAllText(filename, content);
             Console.WriteLine($"{_srt} converted to ASS");
-            //File.Delete(_srt);
+            File.Delete(_srt);
+            return filename;
+        }
+
+        public static string? FindSubtitles(string basename, string subsFolder)  // TODO: TEST PLZ
+        {
+            // Hardcoded match fixes, as there is simply no way to deduce it
+            basename = basename switch
+            {
+                "Cs_4131904_HaiDaoChuXian_Boy" => "Cs_Activity_4001103_Summertime_Boy",
+                "Cs_4131904_HaiDaoChuXian_Girl" => "Cs_Activity_4001103_Summertime_Girl",
+                "Cs_200211_WanYeXianVideo" => "Cs_DQAQ200211_WanYeXianVideo",
+                _ => basename
+            };
+
+            string pathAttempt = Path.Combine(Path.GetFullPath(subsFolder), "EN"); // Taking the EN folder for instance, could be any of them...
+            string[] search = Directory.GetFiles(pathAttempt, basename + "_EN.*").Select(name => Path.GetFileNameWithoutExtension(name)).Distinct().ToArray();
+            if (search.Length == 1) // If the subtitle file is exactly the same
+                return search[0][..^3];  // Removing the suffix "_EN.ext"
+
+            search = Directory.GetFiles(pathAttempt, basename.Replace("_Boy", "").Replace("_Girl", "") + "_EN.*").Select(name => Path.GetFileNameWithoutExtension(name)).Distinct().ToArray();
+            if (search.Length == 1) // In case the subtitles are the same regardless of the Traveler's gender
+                return search[0][..^3];
+
+            return null;
         }
     }
 }

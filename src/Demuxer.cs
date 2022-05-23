@@ -1,8 +1,8 @@
 ﻿using System.CommandLine;
 using System.Text.Json;
-using CRIDemuxer.FileTypes;
+using GICutscenes.FileTypes;
 
-namespace CRIDemuxer
+namespace GICutscenes
 {
     internal class VersionList
     {
@@ -93,7 +93,7 @@ namespace CRIDemuxer
                 HCA audioFile = new(f, key1, key2);
                 audioFile.ConvertToWAV(output);
             }
-            Console.WriteLine("Done !");
+            Console.WriteLine("Extraction completed !");
         }
     }
 }
