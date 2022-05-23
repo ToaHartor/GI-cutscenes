@@ -24,7 +24,7 @@ namespace GICutscenes.FileTypes
         public void ParseSrt()
         {
             string subsLines = File.ReadAllText(_srt); // No worries about the encoding, this is smart enough
-            string[] splitLines = subsLines.ReplaceLineEndings().Split(Environment.NewLine).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();  // Removing useless empty lines
+            string[] splitLines = subsLines.ReplaceLineEndings().Split(Environment.NewLine);
             /* Dialogue line:
              * 0 -> Line number
              * 1 -> Timing of sub start - end (00:00:50,358 --> 00:00:51,225)
@@ -33,10 +33,15 @@ namespace GICutscenes.FileTypes
             //if (splitLines.Length % 3 != 0) throw new Exception($"Line count is invalid, got {splitLines.Length}");
             for (uint i = 0; i < splitLines.Length; i++)
             {
+                if (i + 2 >= splitLines.Length) break; // Case when the last block has no line and timings (hi Ambor_Readings)
                 if (!int.TryParse(splitLines[i], out _)) throw new Exception("Dialogue block doesn't start with a number");
-                if (i + 2 >= splitLines.Length) break; // Case when srt files have no line and timings (hi Ambor_Readings)
                 MatchCollection m = Regex.Matches(splitLines[i + 1], @"-?\d\d:\d\d:\d\d,\d\d");
-                if (m.Count != 2) throw new Exception($"Start and stop times couldn't be correctly parsed: {splitLines[i+1]}");
+                // We skip this iteration if there isn't any match : dialogue line is empty
+                if (m.Count != 2) // throw new Exception($"Start and stop times couldn't be correctly parsed: {splitLines[i+1]}");
+                {
+                    i += 3;
+                    continue;
+                }
                 string dialogLine = "Dialogue: 0,";
 
                 foreach (Match m2 in m)
@@ -47,12 +52,13 @@ namespace GICutscenes.FileTypes
                 dialogLine += "Default,,0,0,0,," + splitLines[i + 2];
                 i += 2;
                 // In case the subtitle text takes two lines
-                if ((i + 1 < splitLines.Length) && (!int.TryParse(splitLines[i + 1], out _)))
+                if ((i + 1 < splitLines.Length) && (!string.IsNullOrWhiteSpace(splitLines[i + 1])))
                 {
                     i += 1;
                     dialogLine += "\\n" + splitLines[i];
                 }
                 _dialogLines.Add(dialogLine);
+                i += 1;
             }
         }
 
@@ -83,11 +89,11 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
 
             File.AppendAllText(filename, content);
             Console.WriteLine($"{_srt} converted to ASS");
-            File.Delete(_srt);
+            File.Delete(_srt); // Can be commented if you don't want to delete the original
             return filename;
         }
 
-        public static string? FindSubtitles(string basename, string subsFolder)  // TODO: TEST PLZ
+        public static string? FindSubtitles(string basename, string subsFolder)
         {
             // Hardcoded match fixes, as there is simply no way to deduce it
             basename = basename switch
