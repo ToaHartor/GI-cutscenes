@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace GICutscenes.FileTypes
 {
@@ -41,16 +36,16 @@ namespace GICutscenes.FileTypes
 
                 foreach (Match m2 in m)
                 {
-                    dialogLine = string.Concat(dialogLine, m2.Value.Replace("-0", "0").Replace(",", "."), ","); // Formatting correctly the match
+                    dialogLine += (m2.Value.Replace("-0", "0").Replace(",", ".") + ",")[1..]; // Formatting correctly the match
                 }
 
-                dialogLine = string.Concat(dialogLine, "Default,,0,0,0,,", splitLines[i + 2]);
+                dialogLine += "Default,,0,0,0,," + splitLines[i + 2];
                 i += 2;
                 // In case the subtitle text takes two lines
                 if ((i + 1 < splitLines.Length) && (!int.TryParse(splitLines[i + 1], out _)))
                 {
                     i += 1;
-                    dialogLine = string.Concat(dialogLine, "\\n" + splitLines[i]);
+                    dialogLine += "\\n" + splitLines[i];
                 }
                 _dialogLines.Add(dialogLine);
             }
