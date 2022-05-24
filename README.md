@@ -15,6 +15,11 @@ I made a python tool a year ago (as a proof of concept) in order to be able to r
 - [x] MKV merging with video, audio, subtitles and fonts (using mkvmerge)
 - [ ] Attempt to multithreading (one thread per file) when batch extracting (USM and HCA)
 
+## Build
+
+This tool uses the .NET framework version 6.0, so you will need the .NET SDK.
+You can open this project in Visual Studio 2022 and build the solution, or use the dotnet CLI : `dotnet build -c Release`.
+
 ## Configuration file
 
 `appsettings.json` contains a configuration sample with the following keys :
@@ -37,7 +42,13 @@ No font file is provided in this repository, so you will have to get them in the
 You should find them in `[Game Directory]\Genshin Impact game\GenshinImpact_Data\StreamingAssets\MiHoYoSDKRes\HttpServerResources\font`.
 You can then copy these two TTF files without renaming them in the tool's directory.
 
-## Command line usage
+## Usage
+
+Grab the latest release from the [release page](https://github.com/ToaHartor/GI-cutscenes/releases), download the first ZIP file and extract it.
+
+Depending on the platform, the command line usage is different. In the examples below, replace `GICutscenes` with the right option depending on your platform :
+- For Windows, simply execute the .exe file : `./GICutscenes.exe`
+- For Linux, use the `dotnet` command to execute the dll `GICutscenes.dll` : `dotnet GICutscenes.dll [options]`
 
 There are 3 different commands available :
 - `demuxUsm` to demux a specific USM file, extracting audio and video and convert extracted HCA files into WAV
@@ -50,9 +61,9 @@ Several options are available for most of the commands :
 `--no-cleanup` disables the suppression of the extracted files after merging
 
 #### Examples
-- `GICutscenes.exe -h` displays the help menu
-- `GICutscenes.exe batchDemux "[Game directory]\Genshin Impact game\GenshinImpact_Data\StreamingAssets\VideoAssets\StandaloneWindows64" --output "./output" --merge --subs --no-cleanup ` will extract every USM file into the `output` directory, merge them with subtitles in a MKV file and will not cleanup the extracted files
-- `GICutscenes.exe demuxUsm hello.usm -b 00112233 -a 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677`
-- `GICutscenes.exe convertHca hello_0.hca` decodes the file and converts it into a WAV file
+- `GICutscenes -h` displays the help menu
+- `GICutscenes batchDemux "[Game directory]\Genshin Impact game\GenshinImpact_Data\StreamingAssets\VideoAssets\StandaloneWindows64" --output "./output" --merge --subs --no-cleanup ` will extract every USM file into the `output` directory, merge them with subtitles in a MKV file and will not cleanup the extracted files
+- `GICutscenes demuxUsm hello.usm -b 00112233 -a 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677`
+- `GICutscenes convertHca hello_0.hca` decodes the file and converts it into a WAV file
 
 The video is extracted as an IVF file (which makes codec detection (VP9) easier for mkvmerge). In order to watch it, you can open it into VLC or change the extension to `.m2v`.
