@@ -14,6 +14,7 @@ namespace GICutscenes
         public static Settings settings;
         private static async Task<int> Main(string[] args)
         {
+            // Loading config file
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
@@ -152,7 +153,7 @@ namespace GICutscenes
             if (merge)
             {
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), subs);
-                //if (!noCleanup)
+                if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
             }
         }
 
@@ -169,7 +170,7 @@ namespace GICutscenes
                 if (merge)
                 {
                     MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), subs);
-                    //if (!noCleanup)
+                    if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
                 }
             }
         }
@@ -223,41 +224,59 @@ namespace GICutscenes
                         "Path value for the key SubsFolder is invalid : Directory does not exist.");
                 subsFolder = Path.GetFullPath(subsFolder);
 
-                string subName = ASS.FindSubtitles(basename, subsFolder) ?? throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
-                subName = Path.GetFileNameWithoutExtension(subName);
-                Console.WriteLine($"Subtitles name found: {subName}");
-                foreach (string d in Directory.EnumerateDirectories(subsFolder))
+                string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
+                if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
                 {
-                    string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
-                    string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
-                    switch (search.Length)
+                    subName = Path.GetFileNameWithoutExtension(subName);
+                    Console.WriteLine($"Subtitles name found: {subName}");
+                    foreach (string d in Directory.EnumerateDirectories(subsFolder))
                     {
-                        case 0:
-                            throw new FileNotFoundException($"No file could be found for the pattern '{subName}_{lang}.*'");
-                        case 1:
-                            ASS sub = new(search[0], lang);
-                            string subFile = search[0];
-                            if (!sub.IsAss())
-                            {
-                                sub.ParseSrt();
-                                subFile = sub.ConvertToAss();
-                            }
-                            container.AddSubtitlesTrack(subFile, lang);
-                            break;
-                        case 2:
-                            string res = Array.Find(search, name => name.EndsWith(".ass")) ?? throw new Exception($"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
-                            container.AddSubtitlesTrack(res, lang);
-                            break;
-                        default:
-                            throw new Exception($"Too many results : {search.Length}");
+                        string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
+                        string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
+                        switch (search.Length)
+                        {
+                            case 0:
+                                Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
+                                break;
+                            case 1:
+                                ASS sub = new(search[0], lang);
+                                string subFile = search[0];
+                                if (!sub.IsAss())
+                                {
+                                    sub.ParseSrt();
+                                    subFile = sub.ConvertToAss();
+                                }
+
+                                container.AddSubtitlesTrack(subFile, lang);
+                                break;
+                            case 2:
+                                string res = Array.Find(search, name => name.EndsWith(".ass")) ??
+                                             throw new Exception(
+                                                 $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
+                                container.AddSubtitlesTrack(res, lang);
+                                break;
+                            default:
+                                throw new Exception($"Too many results ({search.Length}), please report this case");
+                        }
                     }
-                }
-                // Adding attachments
-                container.AddAttachment("ja-jp.ttf","Japanese Font");
-                container.AddAttachment("zh-cn.ttf", "Chinese Font");
+
+                    // Adding attachments
+                    container.AddAttachment("ja-jp.ttf", "Japanese Font");
+                    container.AddAttachment("zh-cn.ttf", "Chinese Font");
+                } else Console.WriteLine($"No subtitles found for cutscene {basename}");
+
                 // Merging the file
                 container.Merge();
             }
+        }
+
+        private static void CleanFiles(string outputPath, string basename)
+        {
+            string basePath = Path.Combine(outputPath, basename);
+            // Removing video file
+            if (File.Exists(basePath + ".ivf")) File.Delete(basePath + ".ivf");
+            foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
+            foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }
     }
 }
