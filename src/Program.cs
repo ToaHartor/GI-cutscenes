@@ -96,20 +96,12 @@ namespace GICutscenes
                 hcaInputArg
             };
 
-            var testCommand = new Command("test", "coucou");
-
-            rootCommand.AddCommand(testCommand);
             rootCommand.AddCommand(demuxUsmCommand);
             rootCommand.AddCommand(batchDemuxCommand);
             rootCommand.AddCommand(convertHcaCommand);
 
 
             // Command Handlers
-            testCommand.SetHandler(async () =>
-            {
-                await TestCommand();
-            });
-
             demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo output, bool merge, bool subs, bool noCleanup) =>
             {
                 await DemuxUsmCommand(file, key1, key2, output, merge, subs, noCleanup);
@@ -127,13 +119,6 @@ namespace GICutscenes
             }, hcaInputArg, outputFolderOption, noCleanupOption);
 
             return rootCommand.InvokeAsync(args).Result;
-        }
-
-        private static async Task TestCommand()
-        {
-            ASS test = new("./Cs_102106_Summon_Girl_PT.txt", "SDK_SC_Web");
-            test.ParseSrt();
-            test.ConvertToAss();
         }
 
         private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo output, bool merge, bool subs, bool noCleanup)
