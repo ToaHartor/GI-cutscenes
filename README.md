@@ -1,4 +1,4 @@
-# GI-cutscenes
+﻿# GI-cutscenes
 
 A command line program playing with the cutscenes files (USM) from Genshin Impact.
 
@@ -6,6 +6,8 @@ It is able to demux USM files, decrypt video and audio tracks, convert HCA files
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game. Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this tool's fault).
 
 #### Cutscenes from version 1.0 to 2.6 can be decrypted.
+
+⚠️**Starting from 2.7, [these changes](https://github.com/ToaHartor/GI-cutscenes/issues/8) might be implemented for the second key**⚠️
 
 If you want to extract newer cutscenes but the `versions.json` in the released zip is outdated, simply download the updated file in the project tree ([here](https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json)) and replace the file.
 This file will be updated with the version key every time a new version drops.
