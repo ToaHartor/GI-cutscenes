@@ -1,6 +1,6 @@
 ﻿namespace GICutscenes.FileTypes
 {
-    public class Channel
+    internal class Channel
     {
         public float[] block;
         public float[] baseTable;
@@ -81,22 +81,18 @@
             int v = data.GetBit(3);
             if (v >= 6)
             {
-                //Console.WriteLine("coucou1");
                 for (uint i = 0; i < count; i++) value[i] = (sbyte)data.GetBit(6);
             }
             else if (v != 0)
             {
-                //Console.WriteLine("coucou2");
-                int v1 = data.GetBit(6), v2 = (1 << v) - 1, v3 = v2 >> 1, v4;
+                int v1 = data.GetBit(6), v2 = (1 << v) - 1, v3 = v2 >> 1;
                 value[0] = (sbyte)v1;
                 for (uint i = 1; i < count; i++)
                 {
-                    v4 = data.GetBit(v);
-                    //Console.WriteLine("v2 : " + v2 + " v3 : " + v3 + " v4 : " + v4);
+                    int v4 = data.GetBit(v);
                     if (v4 != v2) { v1 += v4 - v3; }
                     else { v1 = data.GetBit(6); }
                     value[i] = (sbyte)v1;
-                    //Console.WriteLine("i:" + i + " v1:" + v1);
                 }
             }
             else
@@ -134,16 +130,11 @@
                 scale[i] = (sbyte)v;
             }
             Array.Clear(scale, (int)count, (int)(0x80 - count));
-            //for (int i = 0; i < 0x80; i++)
-            //{
-            //    Console.WriteLine(String.Format("index: {0}, value: {1}, float: {2}", i, value[i], BitConverter.UInt32BitsToSingle(valueInt[valueFloatI + value[i]])));
-            //}
             for (uint i = 0; i < count; i++)
             {
                 float mul = 0.0f;
-                if (value[i] < 64 && value[i] >= 0) mul = BitConverter.UInt32BitsToSingle(valueInt[valueFloatI + value[i]]);
-                baseTable[i] = mul * BitConverter.UInt32BitsToSingle(scaleInt[scaleFloatI + scale[i]]); //valueFloat[value[i]] * scaleFloat[scale[i]];
-                //Console.WriteLine(String.Format("index: {0}, value: {1}, float: {2}", i, value[i], mul));
+                if (value[i] is < 64 and >= 0) mul = BitConverter.UInt32BitsToSingle(valueInt[valueFloatI + value[i]]);
+                baseTable[i] = mul * BitConverter.UInt32BitsToSingle(scaleInt[scaleFloatI + scale[i]]);
             }
         }
 
@@ -197,69 +188,66 @@
 
         public void Decode3(uint a, uint b, uint c, uint d)
         {
-            if (type != 2 && b > 0)
+            if (type == 2 || b <= 0) return;
+            uint[][] listInt = new uint[2][];
+            listInt[0] = new uint[] {
+                0x00000000, 0x00000000, 0x32A0B051, 0x32D61B5E, 0x330EA43A, 0x333E0F68, 0x337D3E0C, 0x33A8B6D5,
+                0x33E0CCDF, 0x3415C3FF, 0x34478D75, 0x3484F1F6, 0x34B123F6, 0x34EC0719, 0x351D3EDA, 0x355184DF,
+                0x358B95C2, 0x35B9FCD2, 0x35F7D0DF, 0x36251958, 0x365BFBB8, 0x36928E72, 0x36C346CD, 0x370218AF,
+                0x372D583F, 0x3766F85B, 0x3799E046, 0x37CD078C, 0x3808980F, 0x38360094, 0x38728177, 0x38A18FAF,
+                0x38D744FD, 0x390F6A81, 0x393F179A, 0x397E9E11, 0x39A9A15B, 0x39E2055B, 0x3A16942D, 0x3A48A2D8,
+                0x3A85AAC3, 0x3AB21A32, 0x3AED4F30, 0x3B1E196E, 0x3B52A81E, 0x3B8C57CA, 0x3BBAFF5B, 0x3BF9295A,
+                0x3C25FED7, 0x3C5D2D82, 0x3C935A2B, 0x3CC4563F, 0x3D02CD87, 0x3D2E4934, 0x3D68396A, 0x3D9AB62B,
+                0x3DCE248C, 0x3E0955EE, 0x3E36FD92, 0x3E73D290, 0x3EA27043, 0x3ED87039, 0x3F1031DC, 0x3F40213B
+            };
+            listInt[1] = new uint[] {
+                0x3F800000, 0x3FAA8D26, 0x3FE33F89, 0x4017657D, 0x4049B9BE, 0x40866491, 0x40B311C4, 0x40EE9910,
+                0x411EF532, 0x4153CCF1, 0x418D1ADF, 0x41BC034A, 0x41FA83B3, 0x4226E595, 0x425E60F5, 0x429426FF,
+                0x42C5672A, 0x43038359, 0x432F3B79, 0x43697C38, 0x439B8D3A, 0x43CF4319, 0x440A14D5, 0x4437FBF0,
+                0x4475257D, 0x44A3520F, 0x44D99D16, 0x4510FA4D, 0x45412C4D, 0x4580B1ED, 0x45AB7A3A, 0x45E47B6D,
+                0x461837F0, 0x464AD226, 0x46871F62, 0x46B40AAF, 0x46EFE4BA, 0x471FD228, 0x4754F35B, 0x478DDF04,
+                0x47BD08A4, 0x47FBDFED, 0x4827CD94, 0x485F9613, 0x4894F4F0, 0x48C67991, 0x49043A29, 0x49302F0E,
+                0x496AC0C7, 0x499C6573, 0x49D06334, 0x4A0AD4C6, 0x4A38FBAF, 0x4A767A41, 0x4AA43516, 0x4ADACB94,
+                0x4B11C3D3, 0x4B4238D2, 0x4B8164D2, 0x4BAC6897, 0x4BE5B907, 0x4C190B88, 0x4C4BEC15, 0x00000000
+            };
+            uint[] listFloat = listInt[1];
+            for (uint i = 0; i < a; i++)
             {
-                uint[][] listInt = new uint[2][];
-                listInt[0] = new uint[0x40] {
-                            0x00000000, 0x00000000, 0x32A0B051, 0x32D61B5E, 0x330EA43A, 0x333E0F68, 0x337D3E0C, 0x33A8B6D5,
-                            0x33E0CCDF, 0x3415C3FF, 0x34478D75, 0x3484F1F6, 0x34B123F6, 0x34EC0719, 0x351D3EDA, 0x355184DF,
-                            0x358B95C2, 0x35B9FCD2, 0x35F7D0DF, 0x36251958, 0x365BFBB8, 0x36928E72, 0x36C346CD, 0x370218AF,
-                            0x372D583F, 0x3766F85B, 0x3799E046, 0x37CD078C, 0x3808980F, 0x38360094, 0x38728177, 0x38A18FAF,
-                            0x38D744FD, 0x390F6A81, 0x393F179A, 0x397E9E11, 0x39A9A15B, 0x39E2055B, 0x3A16942D, 0x3A48A2D8,
-                            0x3A85AAC3, 0x3AB21A32, 0x3AED4F30, 0x3B1E196E, 0x3B52A81E, 0x3B8C57CA, 0x3BBAFF5B, 0x3BF9295A,
-                            0x3C25FED7, 0x3C5D2D82, 0x3C935A2B, 0x3CC4563F, 0x3D02CD87, 0x3D2E4934, 0x3D68396A, 0x3D9AB62B,
-                            0x3DCE248C, 0x3E0955EE, 0x3E36FD92, 0x3E73D290, 0x3EA27043, 0x3ED87039, 0x3F1031DC, 0x3F40213B
-                    };
-                listInt[1] = new uint[0x40] {
-                    0x3F800000, 0x3FAA8D26, 0x3FE33F89, 0x4017657D, 0x4049B9BE, 0x40866491, 0x40B311C4, 0x40EE9910,
-                            0x411EF532, 0x4153CCF1, 0x418D1ADF, 0x41BC034A, 0x41FA83B3, 0x4226E595, 0x425E60F5, 0x429426FF,
-                            0x42C5672A, 0x43038359, 0x432F3B79, 0x43697C38, 0x439B8D3A, 0x43CF4319, 0x440A14D5, 0x4437FBF0,
-                            0x4475257D, 0x44A3520F, 0x44D99D16, 0x4510FA4D, 0x45412C4D, 0x4580B1ED, 0x45AB7A3A, 0x45E47B6D,
-                            0x461837F0, 0x464AD226, 0x46871F62, 0x46B40AAF, 0x46EFE4BA, 0x471FD228, 0x4754F35B, 0x478DDF04,
-                            0x47BD08A4, 0x47FBDFED, 0x4827CD94, 0x485F9613, 0x4894F4F0, 0x48C67991, 0x49043A29, 0x49302F0E,
-                            0x496AC0C7, 0x499C6573, 0x49D06334, 0x4A0AD4C6, 0x4A38FBAF, 0x4A767A41, 0x4AA43516, 0x4ADACB94,
-                            0x4B11C3D3, 0x4B4238D2, 0x4B8164D2, 0x4BAC6897, 0x4BE5B907, 0x4C190B88, 0x4C4BEC15, 0x00000000
-                    };
-                uint[] listFloat = listInt[1];
-                for (uint i = 0; i < a; i++)
+                for (uint j = 0, k = c, l = c - 1; j < b && k < d; j++, l--)
                 {
-                    for (uint j = 0, k = c, l = c - 1; j < b && k < d; j++, l--)
-                    {
-                        block[k++] = BitConverter.UInt32BitsToSingle(listFloat[value[value3I + i] - value[l]]) * block[l];
-                    }
+                    block[k++] = BitConverter.UInt32BitsToSingle(listFloat[value[value3I + i] - value[l]]) * block[l];
                 }
-                block[0x80 - 1] = 0;
             }
+            block[0x80 - 1] = 0;
         }
 
         public void Decode4(int index, uint a, uint b, uint c, Channel c1)
         {
-            if (type == 1 && c != 0)
-            {
-                uint[] listInt = {
+            if (type != 1 || c == 0) return;
+
+            uint[] listInt = {
                 0x40000000, 0x3FEDB6DB, 0x3FDB6DB7, 0x3FC92492, 0x3FB6DB6E, 0x3FA49249, 0x3F924925, 0x3F800000,
                 0x3F5B6DB7, 0x3F36DB6E, 0x3F124925, 0x3EDB6DB7, 0x3E924925, 0x3E124925, 0x00000000, 0x00000000,
-                };
-                float f1 = BitConverter.UInt32BitsToSingle(listInt[c1.value2[index]]);
-                float f2 = f1 - 2.0f;
-                uint sIndex = b;
-                //float* s = &block[b];
-                uint dIndex = b;
-                //float* d = c1.block[b];
-                for (uint i = 0; i < a; i++)
-                {
-                    c1.block[dIndex++] = block[sIndex] * f2;
-                    //*(d++) = *s * f2;
-                    block[sIndex++] = block[sIndex] * f1;
-                    //*(s++) = *s * f1;
-                }
+            };
+            float f1 = BitConverter.UInt32BitsToSingle(listInt[c1.value2[index]]);
+            float f2 = f1 - 2.0f;
+            uint sIndex = b;
+            //float* s = &block[b];
+            uint dIndex = b;
+            //float* d = c1.block[b];
+            for (uint i = 0; i < a; i++)
+            {
+                c1.block[dIndex++] = block[sIndex] * f2;
+                //*(d++) = *s * f2;
+                block[sIndex++] = block[sIndex] * f1;
+                //*(s++) = *s * f1;
             }
         }
 
         public void Decode5(int index)
         {
             uint[][] list1Int = new uint[7][];
-            list1Int[0] = new uint[0x40]
+            list1Int[0] = new uint[]
                 {
                     0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75,
                     0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75,
@@ -270,7 +258,7 @@
                     0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75,
                     0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75,
                 };
-            list1Int[1] = new uint[0x40]
+            list1Int[1] = new uint[]
             {
                     0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31,
                     0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31,
@@ -281,7 +269,7 @@
                     0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31,
                     0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31, 0x3F7B14BE, 0x3F54DB31,
             };
-            list1Int[2] = new uint[0x40]
+            list1Int[2] = new uint[]
             {
                     0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403, 0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403,
                     0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403, 0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403,
@@ -292,7 +280,7 @@
                     0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403, 0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403,
                     0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403, 0x3F7EC46D, 0x3F74FA0B, 0x3F61C598, 0x3F45E403,
             };
-            list1Int[3] = new uint[0x40]
+            list1Int[3] = new uint[]
             {
                     0x3F7FB10F, 0x3F7D3AAC, 0x3F7853F8, 0x3F710908, 0x3F676BD8, 0x3F5B941A, 0x3F4D9F02, 0x3F3DAEF9,
                     0x3F7FB10F, 0x3F7D3AAC, 0x3F7853F8, 0x3F710908, 0x3F676BD8, 0x3F5B941A, 0x3F4D9F02, 0x3F3DAEF9,
@@ -303,7 +291,7 @@
                     0x3F7FB10F, 0x3F7D3AAC, 0x3F7853F8, 0x3F710908, 0x3F676BD8, 0x3F5B941A, 0x3F4D9F02, 0x3F3DAEF9,
                     0x3F7FB10F, 0x3F7D3AAC, 0x3F7853F8, 0x3F710908, 0x3F676BD8, 0x3F5B941A, 0x3F4D9F02, 0x3F3DAEF9,
             };
-            list1Int[4] = new uint[0x40]
+            list1Int[4] = new uint[]
             {
                 0x3F7FEC43, 0x3F7F4E6D, 0x3F7E1324, 0x3F7C3B28, 0x3F79C79D, 0x3F76BA07, 0x3F731447, 0x3F6ED89E,
                     0x3F6A09A7, 0x3F64AA59, 0x3F5EBE05, 0x3F584853, 0x3F514D3D, 0x3F49D112, 0x3F41D870, 0x3F396842,
@@ -314,7 +302,7 @@
                     0x3F7FEC43, 0x3F7F4E6D, 0x3F7E1324, 0x3F7C3B28, 0x3F79C79D, 0x3F76BA07, 0x3F731447, 0x3F6ED89E,
                     0x3F6A09A7, 0x3F64AA59, 0x3F5EBE05, 0x3F584853, 0x3F514D3D, 0x3F49D112, 0x3F41D870, 0x3F396842,
             };
-            list1Int[5] = new uint[0x40]
+            list1Int[5] = new uint[]
             {
                 0x3F7FFB11, 0x3F7FD397, 0x3F7F84AB, 0x3F7F0E58, 0x3F7E70B0, 0x3F7DABCC, 0x3F7CBFC9, 0x3F7BACCD,
                     0x3F7A7302, 0x3F791298, 0x3F778BC5, 0x3F75DEC6, 0x3F740BDD, 0x3F721352, 0x3F6FF573, 0x3F6DB293,
@@ -325,7 +313,7 @@
                     0x3F6B4B0C, 0x3F68BF3C, 0x3F660F88, 0x3F633C5A, 0x3F604621, 0x3F5D2D53, 0x3F59F26A, 0x3F5695E5,
                     0x3F531849, 0x3F4F7A1F, 0x3F4BBBF8, 0x3F47DE65, 0x3F43E200, 0x3F3FC767, 0x3F3B8F3B, 0x3F373A23,
             };
-            list1Int[6] = new uint[0x40]
+            list1Int[6] = new uint[]
             {
                 0x3F7FFEC4, 0x3F7FF4E6, 0x3F7FE129, 0x3F7FC38F, 0x3F7F9C18, 0x3F7F6AC7, 0x3F7F2F9D, 0x3F7EEA9D,
                     0x3F7E9BC9, 0x3F7E4323, 0x3F7DE0B1, 0x3F7D7474, 0x3F7CFE73, 0x3F7C7EB0, 0x3F7BF531, 0x3F7B61FC,
@@ -337,7 +325,7 @@
                     0x3F44E3F5, 0x3F42DE29, 0x3F40D0DA, 0x3F3EBC1B, 0x3F3CA003, 0x3F3A7CA4, 0x3F385216, 0x3F36206C,
             };
             uint[][] list2Int = new uint[7][];
-            list2Int[0] = new uint[0x40]
+            list2Int[0] = new uint[]
                 {
                     0xBD0A8BD4, 0x3D0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4,
                     0x3D0A8BD4, 0xBD0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4,
@@ -348,7 +336,7 @@
                     0xBD0A8BD4, 0x3D0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4,
                     0x3D0A8BD4, 0xBD0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4, 0x3D0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4,
             };
-            list2Int[1] = new uint[0x40]
+            list2Int[1] = new uint[]
             {
                     0xBE47C5C2, 0xBF0E39DA, 0x3E47C5C2, 0x3F0E39DA, 0x3E47C5C2, 0x3F0E39DA, 0xBE47C5C2, 0xBF0E39DA,
                     0x3E47C5C2, 0x3F0E39DA, 0xBE47C5C2, 0xBF0E39DA, 0xBE47C5C2, 0xBF0E39DA, 0x3E47C5C2, 0x3F0E39DA,
@@ -359,7 +347,7 @@
                     0xBE47C5C2, 0xBF0E39DA, 0x3E47C5C2, 0x3F0E39DA, 0x3E47C5C2, 0x3F0E39DA, 0xBE47C5C2, 0xBF0E39DA,
                     0x3E47C5C2, 0x3F0E39DA, 0xBE47C5C2, 0xBF0E39DA, 0xBE47C5C2, 0xBF0E39DA, 0x3E47C5C2, 0x3F0E39DA,
             };
-            list2Int[2] = new uint[0x40]
+            list2Int[2] = new uint[]
             {
                     0xBDC8BD36, 0xBE94A031, 0xBEF15AEA, 0xBF226799, 0x3DC8BD36, 0x3E94A031, 0x3EF15AEA, 0x3F226799,
                     0x3DC8BD36, 0x3E94A031, 0x3EF15AEA, 0x3F226799, 0xBDC8BD36, 0xBE94A031, 0xBEF15AEA, 0xBF226799,
@@ -370,7 +358,7 @@
                     0xBDC8BD36, 0xBE94A031, 0xBEF15AEA, 0xBF226799, 0x3DC8BD36, 0x3E94A031, 0x3EF15AEA, 0x3F226799,
                     0x3DC8BD36, 0x3E94A031, 0x3EF15AEA, 0x3F226799, 0xBDC8BD36, 0xBE94A031, 0xBEF15AEA, 0xBF226799,
             };
-            list2Int[3] = new uint[0x40]
+            list2Int[3] = new uint[]
             {
                     0xBD48FB30, 0xBE164083, 0xBE78CFCC, 0xBEAC7CD4, 0xBEDAE880, 0xBF039C3D, 0xBF187FC0, 0xBF2BEB4A,
                     0x3D48FB30, 0x3E164083, 0x3E78CFCC, 0x3EAC7CD4, 0x3EDAE880, 0x3F039C3D, 0x3F187FC0, 0x3F2BEB4A,
@@ -381,7 +369,7 @@
                     0xBD48FB30, 0xBE164083, 0xBE78CFCC, 0xBEAC7CD4, 0xBEDAE880, 0xBF039C3D, 0xBF187FC0, 0xBF2BEB4A,
                     0x3D48FB30, 0x3E164083, 0x3E78CFCC, 0x3EAC7CD4, 0x3EDAE880, 0x3F039C3D, 0x3F187FC0, 0x3F2BEB4A,
             };
-            list2Int[4] = new uint[0x40]
+            list2Int[4] = new uint[]
             {
                     0xBCC90AB0, 0xBD96A905, 0xBDFAB273, 0xBE2F10A2, 0xBE605C13, 0xBE888E93, 0xBEA09AE5, 0xBEB8442A,
                     0xBECF7BCA, 0xBEE63375, 0xBEFC5D27, 0xBF08F59B, 0xBF13682A, 0xBF1D7FD1, 0xBF273656, 0xBF3085BB,
@@ -392,7 +380,7 @@
                     0xBCC90AB0, 0xBD96A905, 0xBDFAB273, 0xBE2F10A2, 0xBE605C13, 0xBE888E93, 0xBEA09AE5, 0xBEB8442A,
                     0xBECF7BCA, 0xBEE63375, 0xBEFC5D27, 0xBF08F59B, 0xBF13682A, 0xBF1D7FD1, 0xBF273656, 0xBF3085BB,
             };
-            list2Int[5] = new uint[0x40]
+            list2Int[5] = new uint[]
             {
                     0xBC490E90, 0xBD16C32C, 0xBD7B2B74, 0xBDAFB680, 0xBDE1BC2E, 0xBE09CF86, 0xBE22ABB6, 0xBE3B6ECF,
                     0xBE541501, 0xBE6C9A7F, 0xBE827DC0, 0xBE8E9A22, 0xBE9AA086, 0xBEA68F12, 0xBEB263EF, 0xBEBE1D4A,
@@ -403,7 +391,7 @@
                     0x3EC9B953, 0x3ED53641, 0x3EE0924F, 0x3EEBCBBB, 0x3EF6E0CB, 0x3F00E7E4, 0x3F064B82, 0x3F0B9A6B,
                     0x3F10D3CD, 0x3F15F6D9, 0x3F1B02C6, 0x3F1FF6CB, 0x3F24D225, 0x3F299415, 0x3F2E3BDE, 0x3F32C8C9,
             };
-            list2Int[6] = new uint[0x40]
+            list2Int[6] = new uint[]
             {
                     0xBBC90F88, 0xBC96C9B6, 0xBCFB49BA, 0xBD2FE007, 0xBD621469, 0xBD8A200A, 0xBDA3308C, 0xBDBC3AC3,
                     0xBDD53DB9, 0xBDEE3876, 0xBE039502, 0xBE1008B7, 0xBE1C76DE, 0xBE28DEFC, 0xBE354098, 0xBE419B37,
@@ -415,7 +403,7 @@
                     0xBF239DA9, 0xBF26050A, 0xBF286605, 0xBF2AC082, 0xBF2D1469, 0xBF2F61A5, 0xBF31A81D, 0xBF33E7BC,
             };
             uint[][] list3Int = new uint[2][];  // TODO : Merge arrays
-            list3Int[0] = new uint[0x40]
+            list3Int[0] = new uint[]
                 {
                     0x3A3504F0, 0x3B0183B8, 0x3B70C538, 0x3BBB9268, 0x3C04A809, 0x3C308200, 0x3C61284C, 0x3C8B3F17,
                     0x3CA83992, 0x3CC77FBD, 0x3CE91110, 0x3D0677CD, 0x3D198FC4, 0x3D2DD35C, 0x3D434643, 0x3D59ECC1,
@@ -426,7 +414,7 @@
                     0x3EDD5128, 0x3EE6425C, 0x3EEF4EFF, 0x3EF872D7, 0x3F00D4A9, 0x3F0576CA, 0x3F0A1D3B, 0x3F0EC548,
                     0x3F136C25, 0x3F180EF2, 0x3F1CAAC2, 0x3F213CA2, 0x3F25C1A5, 0x3F2A36E7, 0x3F2E9998, 0x3F32E705,
             };
-            list3Int[1] = new uint[0x40]
+            list3Int[1] = new uint[]
             {
                     0xBF371C9E, 0xBF3B37FE, 0xBF3F36F2, 0xBF431780, 0xBF46D7E6, 0xBF4A76A4, 0xBF4DF27C, 0xBF514A6F,
                     0xBF547DC5, 0xBF578C03, 0xBF5A74EE, 0xBF5D3887, 0xBF5FD707, 0xBF6250DA, 0xBF64A699, 0xBF66D908,
@@ -561,16 +549,14 @@
         public int CheckBit(int bitSize)
         {
             int v = 0;
-            if (bit + bitSize <= size)
-            {
-                int[] mask = { 0xFFFFFF, 0x7FFFFF, 0x3FFFFF, 0x1FFFFF, 0x0FFFFF, 0x07FFFF, 0x03FFFF, 0x01FFFF };
-                int dataOffset = bit >> 3;
-                v = data[dataOffset];
-                v = v << 8 | (dataOffset + 1 < data.Length ? data[dataOffset + 1] : 0);  // Only because sometimes it happens
-                v = v << 8 | (dataOffset + 2 < data.Length ? data[dataOffset + 2] : 0);
-                v &= mask[bit & 7];
-                v >>= 24 - (bit & 7) - bitSize;
-            }
+            if (bit + bitSize > size) return v;
+            int[] mask = { 0xFFFFFF, 0x7FFFFF, 0x3FFFFF, 0x1FFFFF, 0x0FFFFF, 0x07FFFF, 0x03FFFF, 0x01FFFF };
+            int dataOffset = bit >> 3;
+            v = data[dataOffset];
+            v = v << 8 | (dataOffset + 1 < data.Length ? data[dataOffset + 1] : 0);  // Only because sometimes it happens
+            v = v << 8 | (dataOffset + 2 < data.Length ? data[dataOffset + 2] : 0);
+            v &= mask[bit & 7];
+            v >>= 24 - (bit & 7) - bitSize;
             return v;
         }
 

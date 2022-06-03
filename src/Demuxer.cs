@@ -1,18 +1,17 @@
-﻿using System.CommandLine;
-using System.Text.Json;
+﻿using System.Text.Json;
 using GICutscenes.FileTypes;
 
 namespace GICutscenes
 {
     internal class VersionList
     {
-        public Version[] list { get; set; }
+        public Version[]? list { get; set; }
     }
     internal class Version
     {
-        public string version { get; set; }
-        public string[] videos { get; set; }
-        public ulong key { get; set; }
+        public string? version { get; set; }
+        public string[]? videos { get; set; }
+        public ulong? key { get; set; }
         public bool? encAudio { get; set; }
     }
     internal class Demuxer
@@ -20,12 +19,12 @@ namespace GICutscenes
         //private bool audioEnc = false;
         private static ulong EncryptionKeyInFilename(string filename)
         {
-            string[] intros = { "MDAQ001_OPNew_Part1.usm", "MDAQ001_OPNew_Part2_PlayerBoy.usm", "MDAQ001_OPNew_Part2_PlayerGirl.usm" };
+            filename = Path.GetFileNameWithoutExtension(filename);
+            string[] intros = { "MDAQ001_OPNew_Part1", "MDAQ001_OPNew_Part2_PlayerBoy", "MDAQ001_OPNew_Part2_PlayerGirl" };
             if (intros.Contains(filename))
             {
                 filename = "MDAQ001_OP";
             }
-            filename = filename.Split('.')[0];
             ulong sum = 0;
 
             foreach (char c in filename) sum = c + 3 * sum;
@@ -38,13 +37,14 @@ namespace GICutscenes
 
         private static (ulong, bool) EncryptionKeyInBLK(string videoFilename)
         {
-            videoFilename = videoFilename.Split('.')[0];
+            if (!File.Exists("versions.json")) throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
+            videoFilename = Path.GetFileNameWithoutExtension(videoFilename);
             string jsonString = File.ReadAllText("versions.json");
-            VersionList versions = JsonSerializer.Deserialize<VersionList>(jsonString);
-            if (versions == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
-            Version v = Array.Find(versions.list, x => x.videos.Contains(videoFilename));
-            if (v == null) throw new KeyNotFoundException("Unable to find blk key for " + videoFilename);
-            return (v.key, v.encAudio ?? false);
+            VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString);
+            if (versions?.list == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
+            Version? v = Array.Find(versions.list, x => x.videos.Contains(videoFilename));
+            if (v?.key == null) throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
+            return (v.key ?? 0, v.encAudio ?? false);
         }
 
         public static ulong EncryptionKey(string videoFilename)
@@ -63,20 +63,19 @@ namespace GICutscenes
         {
             byte[] keyArray = new byte[8];
             BitConverter.GetBytes(key).CopyTo(keyArray, 0);
-            byte[] key1 = new byte[4];
-            byte[] key2 = new byte[4];
-            Array.Copy(keyArray, 0, key1, 0, 4);
-            Array.Copy(keyArray, 4, key2, 0, 4);
+            byte[] key1 = keyArray[..4];
+            byte[] key2 = keyArray[4..];
             return (key1, key2);
         }
 
         public static void Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output)
         {
+            if (!File.Exists(filenameArg)) throw new FileNotFoundException($"File {filenameArg} doesn't exist...");
             string filename = Path.GetFileName(filenameArg);
             byte[] key1, key2;
             if (key1Arg.Length == 0 && key2Arg.Length == 0)
             {
-                Console.WriteLine("Finding encryption key for {0}...", filename);
+                Console.WriteLine($"Finding encryption key for {filename}...");
                 (byte[], byte[]) split = KeySplitter(EncryptionKey(filename));
                 key1 = split.Item1;
                 key2 = split.Item2;
@@ -90,7 +89,7 @@ namespace GICutscenes
             file.Demux(true, true, output);
             foreach (string f in Directory.EnumerateFiles(output, Path.GetFileNameWithoutExtension(filename) + "_*.hca"))
             {
-                HCA audioFile = new(f, key1, key2);
+                Hca audioFile = new(f, key1, key2);
                 audioFile.ConvertToWAV(output);
             }
             Console.WriteLine("Extraction completed !");

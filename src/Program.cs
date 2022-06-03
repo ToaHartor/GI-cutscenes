@@ -12,7 +12,7 @@ namespace GICutscenes
     internal sealed class Program
     {
         public static Settings settings;
-        private static async Task<int> Main(string[] args)
+        private static Task<int> Main(string[] args)
         {
             // Loading config file
             IConfiguration config = new ConfigurationBuilder()
@@ -102,7 +102,7 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo output, bool merge, bool subs, bool noCleanup) =>
+            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, bool merge, bool subs, bool noCleanup) =>
             {
                 await DemuxUsmCommand(file, key1, key2, output, merge, subs, noCleanup);
             },
@@ -118,17 +118,17 @@ namespace GICutscenes
                 await ConvertHcaCommand(input, output /*, noCleanup*/);
             }, hcaInputArg, outputFolderOption, noCleanupOption);
 
-            return rootCommand.InvokeAsync(args).Result;
+            return Task.FromResult(rootCommand.InvokeAsync(args).Result);
         }
 
-        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo output, bool merge, bool subs, bool noCleanup)
+        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, bool merge, bool subs, bool noCleanup)
         {
             if (file == null) throw new ArgumentNullException("No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
             if (!file.Name.EndsWith(".usm"))
                 throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
             if (key1!=null && key2!= null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
-            string outputArg = (output == null)
+            string outputArg = output == null
                 ? file.Directory.FullName
                 : ((output.Exists) ? output.FullName : throw new ArgumentException("Output directory is invalid."));
             Console.WriteLine($"Output folder : {outputArg}");
@@ -144,7 +144,7 @@ namespace GICutscenes
 
         private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, bool merge, bool subs, bool noCleanup)
         {
-            if (inputDir == null || !inputDir.Exists) throw new ArgumentNullException("Input directory is invalid.");
+            if (inputDir is not { Exists: true }) throw new ArgumentNullException("Input directory is invalid.");
             string outputArg = (outputDir == null)
                 ? inputDir.FullName
                 : ((outputDir.Exists) ? outputDir.FullName : throw new ArgumentException("Output directory is invalid."));
@@ -152,11 +152,10 @@ namespace GICutscenes
             foreach (string f in Directory.EnumerateFiles(inputDir.FullName, "*.usm"))
             {
                 Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
-                if (merge)
-                {
-                    MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), subs);
-                    if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
-                }
+                if (!merge) continue;
+
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), subs);
+                if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
             }
         }
 
@@ -171,14 +170,14 @@ namespace GICutscenes
             {
                 case FileInfo f:
                     // TODO add keys :shrug:
-                    if (!f.Name.EndsWith(".hca")) throw new ArgumentException("File provided is not a .hca file.");
-                    HCA file = new(f.FullName);
+                    if (Path.GetExtension(f.Name) == ".hca") throw new ArgumentException("File provided is not a .hca file.");
+                    Hca file = new(f.FullName);
                     file.ConvertToWAV(outputArg);
                     break;
                 case DirectoryInfo directory:
                     foreach (string f in Directory.EnumerateFiles(directory.FullName, "*.hca"))
                     {
-                        HCA singleFile = new(f);
+                        Hca singleFile = new(f);
                         singleFile.ConvertToWAV(outputArg);
                     }
                     break;
@@ -197,69 +196,70 @@ namespace GICutscenes
             container.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav"))
             {
-                if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language))
+                if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language)) // Extracting language number from filename
                     throw new FormatException($"Unable to parse the language code from the file {Path.GetFileName(f)}.");
                 container.AddAudioTrack(f, language);
             }
-            if (subs)
+
+            if (!subs) return;  // no --subs option in the command
+
+            string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
+            if (!Directory.Exists(subsFolder))
+                throw new Exception(
+                    "Path value for the key SubsFolder is invalid : Directory does not exist.");
+            subsFolder = Path.GetFullPath(subsFolder);
+
+            string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
+            if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
             {
-                string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
-                if (!Directory.Exists(subsFolder))
-                    throw new Exception(
-                        "Path value for the key SubsFolder is invalid : Directory does not exist.");
-                subsFolder = Path.GetFullPath(subsFolder);
-
-                string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
-                if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
+                subName = Path.GetFileNameWithoutExtension(subName);
+                Console.WriteLine($"Subtitles name found: {subName}");
+                foreach (string d in Directory.EnumerateDirectories(subsFolder))
                 {
-                    subName = Path.GetFileNameWithoutExtension(subName);
-                    Console.WriteLine($"Subtitles name found: {subName}");
-                    foreach (string d in Directory.EnumerateDirectories(subsFolder))
+                    string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
+                    string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
+                    switch (search.Length)
                     {
-                        string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
-                        string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
-                        switch (search.Length)
-                        {
-                            case 0:
-                                Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
-                                break;
-                            case 1:
-                                ASS sub = new(search[0], lang);
-                                string subFile = search[0];
-                                if (!sub.IsAss())
-                                {
-                                    sub.ParseSrt();
-                                    subFile = sub.ConvertToAss();
-                                }
+                        case 0:
+                            Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
+                            break;
+                        case 1:
+                            ASS sub = new(search[0], lang);
+                            string subFile = search[0];
+                            if (!sub.IsAss())
+                            {
+                                sub.ParseSrt();
+                                subFile = sub.ConvertToAss();
+                            }
 
-                                container.AddSubtitlesTrack(subFile, lang);
-                                break;
-                            case 2:
-                                string res = Array.Find(search, name => name.EndsWith(".ass")) ??
-                                             throw new Exception(
-                                                 $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
-                                container.AddSubtitlesTrack(res, lang);
-                                break;
-                            default:
-                                throw new Exception($"Too many results ({search.Length}), please report this case");
-                        }
+                            container.AddSubtitlesTrack(subFile, lang);
+                            break;
+                        case 2:
+                            string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
+                                         throw new Exception(
+                                             $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
+                            container.AddSubtitlesTrack(res, lang);
+                            break;
+                        default:
+                            throw new Exception($"Too many results ({search.Length}), please report this case");
                     }
+                }
 
-                    // Adding attachments
-                    container.AddAttachment("ja-jp.ttf", "Japanese Font");
-                    container.AddAttachment("zh-cn.ttf", "Chinese Font");
-                } else Console.WriteLine($"No subtitles found for cutscene {basename}");
+                // Adding attachments
+                if (File.Exists("ja-jp.ttf")) container.AddAttachment("ja-jp.ttf", "Japanese Font"); else Console.WriteLine("ja-jp.ttf font not found, skipping...");
+                if (File.Exists("zh-cn.ttf")) container.AddAttachment("zh-cn.ttf", "Chinese Font"); else Console.WriteLine("zh-cn.ttf font not found, skipping...");
+            } else Console.WriteLine($"No subtitles found for cutscene {basename}");
 
-                // Merging the file
-                container.Merge();
-            }
+            // Merging the file
+            container.Merge();
         }
 
         private static void CleanFiles(string outputPath, string basename)
         {
             string basePath = Path.Combine(outputPath, basename);
-            // Removing video file
+            // Removing corresponding video file
             if (File.Exists(basePath + ".ivf")) File.Delete(basePath + ".ivf");
+            // Removing audio files
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }

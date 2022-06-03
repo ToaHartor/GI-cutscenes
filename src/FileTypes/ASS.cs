@@ -10,7 +10,7 @@ namespace GICutscenes.FileTypes
 
         public ASS(string srtFile, string lang)
         {
-            if (!srtFile.EndsWith(".srt") && !srtFile.EndsWith(".txt") && !srtFile.EndsWith(".ass")) throw new FileLoadException("Wrong subtitles file type, requiring SRT file...");
+            if (Path.GetExtension(srtFile) is not (".srt" or ".txt" or ".ass")) throw new FileLoadException("Wrong subtitles file type, requiring SRT file...");
             _srt = srtFile;
             _fontname = (lang == "JP") ? "SDK_JP_Web" : "SDK_SC_Web";
             _dialogLines = new List<string>();
@@ -62,9 +62,9 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public string ConvertToAss()
-        {
-            string filename = _srt.Substring(0, _srt.Length - 4) + ".ass";
+        public string ConvertToAss() {
+
+            string filename = Path.ChangeExtension(_srt, ".ass");
             string header =
                 @$"[Script Info]
 ; This is an Advanced Sub Station Alpha v4+ script.
@@ -109,10 +109,11 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
             if (search.Length == 1) // If the subtitle file is exactly the same
                 return search[0][..^3];  // Removing the suffix "_EN.ext"
 
+            // In case the subtitles are the same regardless of the Traveler's gender
             search = Directory.GetFiles(pathAttempt, basename.Replace("_Boy", "").Replace("_Girl", "") + "_EN.*").Select(name => Path.GetFileNameWithoutExtension(name)).Distinct().ToArray();
-            if (search.Length == 1) // In case the subtitles are the same regardless of the Traveler's gender
+            if (search.Length == 1)
                 return search[0][..^3];
-
+            // Maybe more cases will be needed to fix this
             return null;
         }
     }

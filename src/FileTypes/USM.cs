@@ -3,7 +3,7 @@ using GICutscenes.Utils;
 
 namespace GICutscenes.FileTypes
 {
-    struct Info
+    internal struct Info
     {
         public uint signature;
         public uint dataSize;
@@ -14,7 +14,7 @@ namespace GICutscenes.FileTypes
         public uint frameTime;
         public uint frameRate;
     }
-    public class USM
+    internal class USM
     {
         private readonly string _filename;
         private readonly string _path;
@@ -80,27 +80,25 @@ namespace GICutscenes.FileTypes
 
         private void MaskVideo(ref byte[] data, int size)
         {
-            int dataOffset = 0x40;
+            const int dataOffset = 0x40;
             size -= dataOffset;
-            if (size >= 0x200)
+            if (size < 0x200) return;
+            byte[] mask = new byte[0x20];
+            Array.Copy(_videoMask2, mask, 0x20);
+            for (int i = 0x100; i < size; i++)
             {
-                byte[] mask = new byte[0x20];
-                Array.Copy(_videoMask2, mask, 0x20);
-                for (int i = 0x100; i < size; i++)
-                {
-                    mask[i & 0x1F] = (byte)((data[i + dataOffset] ^= mask[i & 0x1F]) ^ _videoMask2[i & 0x1F]);
-                }
-                Array.Copy(_videoMask1, mask, 0x20);
-                for (int i = 0; i < 0x100; i++)
-                {
-                    data[i + dataOffset] ^= mask[i & 0x1F] ^= data[0x100 + i + dataOffset];
-                }
+                mask[i & 0x1F] = (byte)((data[i + dataOffset] ^= mask[i & 0x1F]) ^ _videoMask2[i & 0x1F]);
+            }
+            Array.Copy(_videoMask1, mask, 0x20);
+            for (int i = 0; i < 0x100; i++)
+            {
+                data[i + dataOffset] ^= mask[i & 0x1F] ^= data[0x100 + i + dataOffset];
             }
         }
 
         private void MaskAudio(ref byte[] data, uint size)
         {
-            uint dataOffset = 0x140;
+            const uint dataOffset = 0x140;
             size -= dataOffset;
             for (int i = 0; i < size; i++)  // To be confirmed, could start at the current index of data as well...
             {
@@ -113,7 +111,7 @@ namespace GICutscenes.FileTypes
 
             FileStream filePointer = File.OpenRead(_path);
             long fileSize = filePointer.Length;
-            Info info = new Info();
+            Info info = new();
             Console.WriteLine($"Demuxing {_filename} : extracting video and audio...");
 
             while (fileSize > 0)
@@ -150,7 +148,7 @@ namespace GICutscenes.FileTypes
                                 if (videoExtract)
                                 {
                                     MaskVideo(ref data, size);
-                                    using FileStream stream = new(Path.Combine(outputDir, _filename.Substring(0, _filename.Length - 4)+ ".ivf"), FileMode.Append, FileAccess.Write);
+                                    using FileStream stream = new(Path.Combine(outputDir, _filename[..^4]+ ".ivf"), FileMode.Append, FileAccess.Write);
                                     stream.Write(data, 0, data.Length);
                                 }
                                 break;
@@ -167,7 +165,7 @@ namespace GICutscenes.FileTypes
                                 {
                                     // Might need some extra work if the audio has to be decrypted during the demuxing
                                     // (hello AudioMask)
-                                    using FileStream stream = new(Path.Combine(outputDir, _filename.Substring(0, _filename.Length - 4)+ $"_{info.chno}.hca"), FileMode.Append, FileAccess.Write);
+                                    using FileStream stream = new(Path.Combine(outputDir, _filename[..^4]+ $"_{info.chno}.hca"), FileMode.Append, FileAccess.Write);
                                     stream.Write(data, 0, data.Length);
                                 }
                                 break;
@@ -183,12 +181,6 @@ namespace GICutscenes.FileTypes
             }
 
         }
-
-        //public void AudioConversion(string filename)
-        //{
-        //    HCA audioFile = new HCA(filename, _key1, _key2);
-        //    audioFile.ConvertToWAV();
-        //}
     }
 
 }

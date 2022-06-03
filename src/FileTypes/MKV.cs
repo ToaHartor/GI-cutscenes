@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace GICutscenes.FileTypes
 {
@@ -51,18 +46,22 @@ namespace GICutscenes.FileTypes
                     mkvmergePath = "mkvmerge";  // Provided the binary is in the PATH
                     break;
                 case PlatformID.Other:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                case PlatformID.Xbox:
                 default:
                     throw new PlatformNotSupportedException("Default mkvmerge path for this OS isn't registered...");
             }
             _mkvmerge = mkvmergePath;
-            if (!output.EndsWith(".mkv")) throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
+            if (Path.GetExtension(output) != ".mkv") throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
             _command = $@"-q -o ""{output}""";  // -q is for quiet mode
         }
 
         public MKV(string output, string mkvmergePath)
         {
             _mkvmerge = mkvmergePath;
-            if (!output.EndsWith(".mkv")) throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
+            if (Path.GetExtension(output) != ".mkv") throw new ArgumentException("Output file provided to mkvmerge isn't valid.");
             _command = $@"-q -o ""{output}""";
         }
 

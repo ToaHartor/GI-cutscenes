@@ -107,7 +107,7 @@ namespace GICutscenes.FileTypes
         // PAD
     }
 
-    public class HCA
+    public class Hca
     {
         private readonly string _filename;
         private readonly byte[] _key1;
@@ -115,32 +115,28 @@ namespace GICutscenes.FileTypes
         private readonly byte[] _ciphTable;
         private byte[] _athTable;
         private bool _encrypted = false;
-        private HCAHeader hcaHeader;
-        private Channel[] hcaChannel; // usually of size 0x10
-        private byte[] header;
-        private byte[] data;
+        private HCAHeader _hcaHeader;
+        private Channel[] _hcaChannel; // usually of size 0x10
+        private byte[] _header;
+        private byte[] _data;
 
-        public HCA(string filename)  // Constructor for hca files automatically extracted (the keys can be retrieved from the filename then
+        public Hca(string filename, byte[]? key1 = null, byte[]? key2 = null)
         {
             _filename = filename;
-            FileInfo f = new(filename);
-            Match m = Regex.Match(f.Name, @"(.*?)_[0-3]\.hca");
-            if (!m.Success) throw new ArgumentException($"Unable to find key for the file {f.Name}, as it has to follow a specific naming convention when automatically demuxed...");
-            var splitKeys = Demuxer.KeySplitter(Demuxer.EncryptionKey(m.Groups[1].Captures[0]+".usm"));
-            _key1 = splitKeys.Item1;
-            _key2 = splitKeys.Item2;
-            _ciphTable = new byte[0x100];
-            hcaHeader = new HCAHeader();
-            header = ReadHeader();
-        }
-        public HCA(string filename, byte[] key1, byte[] key2)
-        {
-            _filename = filename;
+            if (key1 == null || key2 == null)  // if no key is provided, then attempt to automatically find the keys based to the filenames in versions.json
+            {
+                FileInfo f = new(filename);
+                Match m = Regex.Match(f.Name, @"(.*?)_[0-3]\.hca");  // Matching a base name that could correspond to a USM file from versions.json
+                if (!m.Success) throw new ArgumentException($"Unable to find key for the file {f.Name}, as it has to follow a specific naming convention when automatically demuxed...");
+                var splitKeys = Demuxer.KeySplitter(Demuxer.EncryptionKey(m.Groups[1].Captures[0] + ".usm"));
+                key1 = splitKeys.Item1;
+                key2 = splitKeys.Item2;
+            }
             _key1 = key1;
             _key2 = key2;
             _ciphTable = new byte[0x100];
-            hcaHeader = new HCAHeader();
-            header = ReadHeader();
+            _hcaHeader = new HCAHeader();
+            _header = ReadHeader();
         }
 
         private byte[] Init56_CreateTable(byte key)
@@ -169,7 +165,7 @@ namespace GICutscenes.FileTypes
                     for (int i = 0, v = 0; i < 0xFF; i++)
                     {
                         v = v * 13 + 11 & 0xFF;
-                        if (v == 0 || v == 0xFF) v = v * 13 + 11 & 0xFF;
+                        if (v is 0 or 0xFF) v = v * 13 + 11 & 0xFF;
                         _ciphTable[i] = (byte)v;
                     }
                     _ciphTable[0] = 0;
@@ -210,12 +206,11 @@ namespace GICutscenes.FileTypes
                     };
 
                     byte[] t3 = new byte[0x100];
-                    byte[] t31, t32;
-                    t31 = Init56_CreateTable(t1[0]);
+                    byte[] t31 = Init56_CreateTable(t1[0]);
                     // Create Table
                     for (int i = 0; i < 0x10; i++)
                     {
-                        t32 = Init56_CreateTable(t2[i]);
+                        byte[] t32 = Init56_CreateTable(t2[i]);
                         byte v = (byte)(t31[i] << 4);
                         int index = 0;
                         foreach (byte j in t32)
@@ -312,8 +307,8 @@ namespace GICutscenes.FileTypes
             if (sign == 0x00414348u)
             {
                 BitConverter.GetBytes(sign).CopyTo(hcaBytes, 0);
-                hcaHeader.version = Tools.Bswap(BitConverter.ToUInt16(hcaBytes, 4));
-                hcaHeader.dataOffset = Tools.Bswap(BitConverter.ToUInt16(hcaBytes, 6));
+                _hcaHeader.version = Tools.Bswap(BitConverter.ToUInt16(hcaBytes, 4));
+                _hcaHeader.dataOffset = Tools.Bswap(BitConverter.ToUInt16(hcaBytes, 6));
             }
             else
             {
@@ -321,7 +316,7 @@ namespace GICutscenes.FileTypes
                 Environment.Exit(0);
             }
 
-            byte[] header = new byte[hcaHeader.dataOffset];
+            byte[] header = new byte[_hcaHeader.dataOffset];
             filePointer.Seek(0, SeekOrigin.Begin);
             filePointer.Read(header, 0, header.Length);
             Array.Copy(hcaBytes, 0, header, 0, hcaBytes.Length);
@@ -334,12 +329,12 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("fmt");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.channelCount = header[headerOffset + 4];
+                _hcaHeader.channelCount = header[headerOffset + 4];
                 byte[] samplingRate = new byte[4];
                 Array.Copy(header, headerOffset + 5, samplingRate, 0, 3);
                 samplingRate[3] = 0x00;
-                hcaHeader.samplingRate = Tools.Bswap(BitConverter.ToUInt32(samplingRate) << 8);
-                hcaHeader.blockCount = Tools.Bswap(BitConverter.ToUInt32(header, headerOffset + 8));
+                _hcaHeader.samplingRate = Tools.Bswap(BitConverter.ToUInt32(samplingRate) << 8);
+                _hcaHeader.blockCount = Tools.Bswap(BitConverter.ToUInt32(header, headerOffset + 8));
                 headerOffset += 16;
             }
             else
@@ -355,37 +350,37 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("comp");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.blockSize = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
-                hcaHeader.comp_r01 = header[headerOffset + 6];
-                hcaHeader.comp_r02 = header[headerOffset + 7];
-                hcaHeader.comp_r03 = header[headerOffset + 8];
-                hcaHeader.comp_r04 = header[headerOffset + 9];
-                hcaHeader.comp_r05 = header[headerOffset + 10];
-                hcaHeader.comp_r06 = header[headerOffset + 11];
-                hcaHeader.comp_r07 = header[headerOffset + 12];
-                hcaHeader.comp_r08 = header[headerOffset + 13];
-                if (!(hcaHeader.blockSize >= 8 && hcaHeader.blockSize <= 0xFFFF || hcaHeader.blockSize == 0)) throw new Exception("Incorrect block size");
-                if (!(hcaHeader.comp_r01 >= 0 && hcaHeader.comp_r01 <= hcaHeader.comp_r02 && hcaHeader.comp_r02 <= 0x1F)) throw new Exception("Incorrect comp values");
+                _hcaHeader.blockSize = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
+                _hcaHeader.comp_r01 = header[headerOffset + 6];
+                _hcaHeader.comp_r02 = header[headerOffset + 7];
+                _hcaHeader.comp_r03 = header[headerOffset + 8];
+                _hcaHeader.comp_r04 = header[headerOffset + 9];
+                _hcaHeader.comp_r05 = header[headerOffset + 10];
+                _hcaHeader.comp_r06 = header[headerOffset + 11];
+                _hcaHeader.comp_r07 = header[headerOffset + 12];
+                _hcaHeader.comp_r08 = header[headerOffset + 13];
+                if (_hcaHeader.blockSize is not (>= 8 and <= 0xFFFF or 0)) throw new Exception("Incorrect block size");
+                if (!(_hcaHeader.comp_r01 >= 0 && _hcaHeader.comp_r01 <= _hcaHeader.comp_r02 && _hcaHeader.comp_r02 <= 0x1F)) throw new Exception("Incorrect comp values");
                 headerOffset += 16;
             }
             else if (sign == 0x00636564u) // dec
             {
                 //Console.WriteLine("dec");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.blockSize = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
-                hcaHeader.comp_r01 = header[headerOffset + 6];
-                hcaHeader.comp_r02 = header[headerOffset + 7];
+                _hcaHeader.blockSize = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
+                _hcaHeader.comp_r01 = header[headerOffset + 6];
+                _hcaHeader.comp_r02 = header[headerOffset + 7];
                 // I hope there isn't any weird things with endianness
-                hcaHeader.comp_r03 = (byte)(header[headerOffset + 10] >> 4);  // 4 first bits
-                hcaHeader.comp_r04 = header[headerOffset + 10] & 0xFu;  // 4 last bits
+                _hcaHeader.comp_r03 = (byte)(header[headerOffset + 10] >> 4);  // 4 first bits
+                _hcaHeader.comp_r04 = header[headerOffset + 10] & 0xFu;  // 4 last bits
 
-                hcaHeader.comp_r05 = header[headerOffset + 8];
-                hcaHeader.comp_r06 = (header[headerOffset + 11] > 0 ? header[headerOffset + 9] : header[headerOffset + 8]) + 1u;
-                hcaHeader.comp_r07 = hcaHeader.comp_r05 - hcaHeader.comp_r06;
-                hcaHeader.comp_r08 = 0;
-                if (!(hcaHeader.blockSize >= 8 && hcaHeader.blockSize <= 0xFFFF || hcaHeader.blockSize == 0)) throw new Exception("Incorrect block size");
-                if (!(hcaHeader.comp_r01 >= 0 && hcaHeader.comp_r01 <= hcaHeader.comp_r02 && hcaHeader.comp_r02 <= 0x1F)) throw new Exception("Incorrect comp values");
-                if (hcaHeader.comp_r03 == 0) hcaHeader.comp_r03 = 1;
+                _hcaHeader.comp_r05 = header[headerOffset + 8];
+                _hcaHeader.comp_r06 = (header[headerOffset + 11] > 0 ? header[headerOffset + 9] : header[headerOffset + 8]) + 1u;
+                _hcaHeader.comp_r07 = _hcaHeader.comp_r05 - _hcaHeader.comp_r06;
+                _hcaHeader.comp_r08 = 0;
+                if (_hcaHeader.blockSize is not (>= 8 and <= 0xFFFF or 0)) throw new Exception("Incorrect block size");
+                if (!(_hcaHeader.comp_r01 >= 0 && _hcaHeader.comp_r01 <= _hcaHeader.comp_r02 && _hcaHeader.comp_r02 <= 0x1F)) throw new Exception("Incorrect comp values");
+                if (_hcaHeader.comp_r03 == 0) _hcaHeader.comp_r03 = 1;
                 headerOffset += 12;
             }
             else
@@ -410,12 +405,12 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("ath");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.athType = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
+                _hcaHeader.athType = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
                 headerOffset += 6;
             }
             else
             {
-                if (hcaHeader.version < 0x200) hcaHeader.athType = 1;
+                if (_hcaHeader.version < 0x200) _hcaHeader.athType = 1;
             }
 
             // loop
@@ -425,12 +420,12 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("loop");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.loopFlg = true;
+                _hcaHeader.loopFlg = true;
                 headerOffset += 16;
             }
             else
             {
-                hcaHeader.loopFlg = false;
+                _hcaHeader.loopFlg = false;
             }
 
             // ciph
@@ -440,14 +435,13 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("ciph");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.ciphType = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
-                BitConverter.GetBytes(0).CopyTo(header, headerOffset + 4);
-                if (!(hcaHeader.ciphType == 0 || hcaHeader.ciphType == 1 || hcaHeader.ciphType == 0x38)) throw new Exception("Invalid cipher type: " + hcaHeader.ciphType);
+                _hcaHeader.ciphType = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
+                if (_hcaHeader.ciphType is not (0 or 1 or 0x38)) throw new Exception("Invalid cipher type: " + _hcaHeader.ciphType);
                 headerOffset += 6;
             }
             else
             {
-                hcaHeader.ciphType = 0;
+                _hcaHeader.ciphType = 0;
             }
 
             // rva
@@ -457,12 +451,12 @@ namespace GICutscenes.FileTypes
             {
                 //Console.WriteLine("rva");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                hcaHeader.volume = Tools.Bswap(BitConverter.ToSingle(header, headerOffset + 4));
+                _hcaHeader.volume = Tools.Bswap(BitConverter.ToSingle(header, headerOffset + 4));
                 headerOffset += 8;
             }
             else
             {
-                hcaHeader.volume = 1;
+                _hcaHeader.volume = 1;
             }
 
             // comm
@@ -486,13 +480,13 @@ namespace GICutscenes.FileTypes
             }
             //Console.WriteLine("Finished parsing header...");
             BitConverter.GetBytes(Tools.Bswap(CheckSum(header, header.Length - 2))).CopyTo(header, header.Length - 2);
-            data = new byte[hcaHeader.blockSize * hcaHeader.blockCount];
-            filePointer.Read(data, 0, (int)(hcaHeader.blockSize * hcaHeader.blockCount));
+            _data = new byte[_hcaHeader.blockSize * _hcaHeader.blockCount];
+            filePointer.Read(_data, 0, (int)(_hcaHeader.blockSize * _hcaHeader.blockCount));
             filePointer.Close();
             ATHInit();
-            InitMask(hcaHeader.ciphType);
+            InitMask(_hcaHeader.ciphType);
 
-            if (hcaHeader.comp_r03 == 0) hcaHeader.comp_r03 = 1;
+            if (_hcaHeader.comp_r03 == 0) _hcaHeader.comp_r03 = 1;
 
             ChannelInit();
 
@@ -506,21 +500,21 @@ namespace GICutscenes.FileTypes
             //FileStream filePointer = File.OpenRead(filename);
 
             //byte[] content = new byte[hcaHeader.blockSize * hcaHeader.blockCount];
-            byte[] data2 = new byte[hcaHeader.blockSize];
+            byte[] data2 = new byte[_hcaHeader.blockSize];
 
-            InitMask(hcaHeader.ciphType);
+            InitMask(_hcaHeader.ciphType);
             Console.WriteLine("Decrypting content...");
-            if (hcaHeader.ciphType != 0)
+            if (_hcaHeader.ciphType != 0)
             { //a = hcaHeader.dataOffset
-                for (uint i = 0, a = 0; i < hcaHeader.blockCount; i++, a += hcaHeader.blockSize)
+                for (uint i = 0, a = 0; i < _hcaHeader.blockCount; i++, a += _hcaHeader.blockSize)
                 {
-                    Array.Copy(data, a, data2, 0, hcaHeader.blockSize);
+                    Array.Copy(_data, a, data2, 0, _hcaHeader.blockSize);
                     //filePointer.Seek(a, SeekOrigin.Begin);
                     //filePointer.Read(data2, 0, hcaHeader.blockSize);
                     //Console.WriteLine(Convert.ToHexString(data2));
-                    Mask(ref data2, hcaHeader.blockSize);
-                    BitConverter.GetBytes(Tools.Bswap(CheckSum(data2, hcaHeader.blockSize - 2))).CopyTo(data2, hcaHeader.blockSize - 2); // checksum inclusion
-                    Array.Copy(data2, 0, data, a, hcaHeader.blockSize); // a - hcaHeader.dataOffset
+                    Mask(ref data2, _hcaHeader.blockSize);
+                    BitConverter.GetBytes(Tools.Bswap(CheckSum(data2, _hcaHeader.blockSize - 2))).CopyTo(data2, _hcaHeader.blockSize - 2); // checksum inclusion
+                    Array.Copy(data2, 0, _data, a, _hcaHeader.blockSize); // a - hcaHeader.dataOffset
                 }
             }
             //filePointer.Close();
@@ -534,28 +528,28 @@ namespace GICutscenes.FileTypes
 
         private void DecodeBlock(ref byte[] data)
         {
-            Mask(ref data, hcaHeader.blockSize);
-            ClData d = new(data, hcaHeader.blockSize);
+            Mask(ref data, _hcaHeader.blockSize);
+            ClData d = new(data, _hcaHeader.blockSize);
             int magic = d.GetBit(16);//0xFFFF固定
             if (magic != 0xFFFF) return;
             int a = (d.GetBit(9) << 8) - d.GetBit(7);
-                for (uint i = 0; i < hcaHeader.channelCount; i++) hcaChannel[i].Decode1(ref d, hcaHeader.comp_r09, a, _athTable);
+                for (uint i = 0; i < _hcaHeader.channelCount; i++) _hcaChannel[i].Decode1(ref d, _hcaHeader.comp_r09, a, _athTable);
                 for (int i = 0; i < 8; i++)
                 {
-                    for (uint j = 0; j < hcaHeader.channelCount; j++) hcaChannel[j].Decode2(ref d);
-                    for (uint j = 0; j < hcaHeader.channelCount; j++)
-                        hcaChannel[j].Decode3(hcaHeader.comp_r09, hcaHeader.comp_r08,
-                            hcaHeader.comp_r07 + hcaHeader.comp_r06, hcaHeader.comp_r05);
-                    for (uint j = 0; j < hcaHeader.channelCount - 1; j++)
-                        hcaChannel[j].Decode4(i, hcaHeader.comp_r05 - hcaHeader.comp_r06, hcaHeader.comp_r06,
-                            hcaHeader.comp_r07, hcaChannel[1]);
-                    for (uint j = 0; j < hcaHeader.channelCount; j++) hcaChannel[j].Decode5(i);
+                    for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode2(ref d);
+                    for (uint j = 0; j < _hcaHeader.channelCount; j++)
+                        _hcaChannel[j].Decode3(_hcaHeader.comp_r09, _hcaHeader.comp_r08,
+                            _hcaHeader.comp_r07 + _hcaHeader.comp_r06, _hcaHeader.comp_r05);
+                    for (uint j = 0; j < _hcaHeader.channelCount - 1; j++)
+                        _hcaChannel[j].Decode4(i, _hcaHeader.comp_r05 - _hcaHeader.comp_r06, _hcaHeader.comp_r06,
+                            _hcaHeader.comp_r07, _hcaChannel[1]);
+                    for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode5(i);
                 }
         }
 
         private void ATHInit()
         {
-            switch (hcaHeader.athType)
+            switch (_hcaHeader.athType)
             {
                 case 0:
                     _athTable = new byte[0x80];
@@ -605,7 +599,7 @@ namespace GICutscenes.FileTypes
                             0xDE, 0xDF, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE,
                             0xEF, 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFF, 0xFF,
                     };
-                    for (uint i = 0, v = 0; i < 0x80; i++, v += hcaHeader.samplingRate)
+                    for (uint i = 0, v = 0; i < 0x80; i++, v += _hcaHeader.samplingRate)
                     {
                         uint index = v >> 13;
                         if (index >= 0x28E)
@@ -624,20 +618,20 @@ namespace GICutscenes.FileTypes
 
         private void ChannelInit()
         {
-            hcaChannel = new Channel[hcaHeader.channelCount];
-            for (int i = 0; i < hcaHeader.channelCount; i++)
+            _hcaChannel = new Channel[_hcaHeader.channelCount];
+            for (int i = 0; i < _hcaHeader.channelCount; i++)
             {
-                hcaChannel[i] = new Channel();
+                _hcaChannel[i] = new Channel();
             }
-            if (!(hcaHeader.comp_r01 == 1 && hcaHeader.comp_r02 == 15)) throw new Exception("Comp values invalid");
-            hcaHeader.comp_r09 = Tools.Ceil2(hcaHeader.comp_r05 - (hcaHeader.comp_r06 + hcaHeader.comp_r07), hcaHeader.comp_r08);
+            if (!(_hcaHeader.comp_r01 == 1 && _hcaHeader.comp_r02 == 15)) throw new Exception("Comp values invalid");
+            _hcaHeader.comp_r09 = Tools.Ceil2(_hcaHeader.comp_r05 - (_hcaHeader.comp_r06 + _hcaHeader.comp_r07), _hcaHeader.comp_r08);
             byte[] r = new byte[0x10];
             Array.Clear(r);
-            uint b = hcaHeader.channelCount / hcaHeader.comp_r03;
-            if (hcaHeader.comp_r07 != 0 && b > 1)
+            uint b = _hcaHeader.channelCount / _hcaHeader.comp_r03;
+            if (_hcaHeader.comp_r07 != 0 && b > 1)
             {
                 uint c = 0;
-                for (uint i = 0; i < hcaHeader.comp_r03; i++, c += b)
+                for (uint i = 0; i < _hcaHeader.comp_r03; i++, c += b)
                 {
                     switch (b)
                     {
@@ -654,7 +648,7 @@ namespace GICutscenes.FileTypes
                         case 4:
                             r[c] = 1;
                             r[c + 1] = 2;
-                            if (hcaHeader.comp_r04 == 0)
+                            if (_hcaHeader.comp_r04 == 0)
                             {
                                 r[c + 2] = 1;
                                 r[c + 3] = 2;
@@ -664,7 +658,7 @@ namespace GICutscenes.FileTypes
                         case 5:
                             r[c] = 1;
                             r[c + 1] = 2;
-                            if (hcaHeader.comp_r04 <= 2)
+                            if (_hcaHeader.comp_r04 <= 2)
                             {
                                 r[c + 3] = 1;
                                 r[c + 4] = 2;
@@ -696,11 +690,11 @@ namespace GICutscenes.FileTypes
                     }
                 }
             }
-            for (uint i = 0; i < hcaHeader.channelCount; i++)
+            for (uint i = 0; i < _hcaHeader.channelCount; i++)
             {
-                hcaChannel[i].type = r[i];
-                hcaChannel[i].value3I = hcaHeader.comp_r06 + hcaHeader.comp_r07;
-                hcaChannel[i].count = hcaHeader.comp_r06 + (r[i] != 2 ? hcaHeader.comp_r07 : 0);
+                _hcaChannel[i].type = r[i];
+                _hcaChannel[i].value3I = _hcaHeader.comp_r06 + _hcaHeader.comp_r07;
+                _hcaChannel[i].count = _hcaHeader.comp_r06 + (r[i] != 2 ? _hcaHeader.comp_r07 : 0);
             }
         }
 
@@ -713,16 +707,16 @@ namespace GICutscenes.FileTypes
 
             WAVEriff wavRiff = new();
             WAVEsmpl wavSmpl = new();
-            //WAVEnote wavNote = new WAVEnote();
+            //WAVEnote wavNote = new();
             WAVEdata wavData = new();
             wavRiff.fmtType = (ushort)(mode > 0 ? 1 : 3);
-            wavRiff.fmtChannelCount = (ushort)hcaHeader.channelCount;
+            wavRiff.fmtChannelCount = (ushort)_hcaHeader.channelCount;
             wavRiff.fmtBitCount = (ushort)(mode > 0 ? mode : 32);
-            wavRiff.fmtSamplingRate = hcaHeader.samplingRate;
+            wavRiff.fmtSamplingRate = _hcaHeader.samplingRate;
             wavRiff.fmtSamplingSize = (ushort)(wavRiff.fmtBitCount / 8 * wavRiff.fmtChannelCount);
             wavRiff.fmtSamplesPerSec = wavRiff.fmtSamplingRate * wavRiff.fmtSamplingSize;
 
-            wavData.dataSize = hcaHeader.blockCount * 0x80 * 8 * wavRiff.fmtSamplingSize + (wavSmpl.loop_End - wavSmpl.loop_Start) * loop;
+            wavData.dataSize = _hcaHeader.blockCount * 0x80 * 8 * wavRiff.fmtSamplingSize + (wavSmpl.loop_End - wavSmpl.loop_Start) * loop;
             wavRiff.riffSize = (uint)(0x1C + Marshal.SizeOf(wavData) + wavData.dataSize);
 
             // We do skip wavSmpl and wavNote, as they aren't useful to convert GI's HCA to WAV
@@ -731,28 +725,27 @@ namespace GICutscenes.FileTypes
             byte[] header = riffBytes.Concat(dataBytes).ToArray();
 
             // Opening the new wav file
-            string wavFile = Path.Combine(outputDir, _filename.Substring(0, _filename.Length - 4) + ".wav");
+            string wavFile = Path.Combine(outputDir, _filename[..^4] + ".wav");
             FileStream fs = new(wavFile, FileMode.Create);
             fs.Write(header, 0, header.Length);
             Console.WriteLine($"Converting {Path.GetFileName(_filename)} to wav...");
-            hcaHeader.volume *= volume;
+            _hcaHeader.volume *= volume;
 
-            byte[] data2 = new byte[hcaHeader.blockSize];
+            byte[] data2 = new byte[_hcaHeader.blockSize];
             // Skipping the block for the loop
             uint offset = 0;
-            float f;
-            for (uint l = 0; l < hcaHeader.blockCount; l++, offset += hcaHeader.blockSize) // iterating through hca blocks  hcaHeader.blockCount
+            for (uint l = 0; l < _hcaHeader.blockCount; l++, offset += _hcaHeader.blockSize) // iterating through hca blocks
             {
-                Array.Copy(data, offset, data2, 0, hcaHeader.blockSize);
+                Array.Copy(_data, offset, data2, 0, _hcaHeader.blockSize);
                 DecodeBlock(ref data2);
                 //byte[] contentBlock = new byte[wavData.dataSize / hcaHeader.blockCount];
                 for (int i = 0; i < 8; i++)
                 {
                     for (int j = 0; j < 0x80; j++)
                     {
-                        for (uint k = 0; k < hcaHeader.channelCount; k++)
+                        for (uint k = 0; k < _hcaHeader.channelCount; k++)
                         {
-                            f = hcaChannel[k].wave[i][j] * hcaHeader.volume;
+                            float f = _hcaChannel[k].wave[i][j] * _hcaHeader.volume;
                             if (f > 1) f = 1;
                             else if (f < -1) f = -1;
                             // Decoding mode
@@ -786,15 +779,10 @@ namespace GICutscenes.FileTypes
                                     throw new Exception("This mode is not handled");
                             }
                             byte[] byteV = BitConverter.GetBytes(v);
-                            //Console.WriteLine(v);
-                            //Console.WriteLine(Convert.ToHexString(byteV));
                             fs.Write(byteV, 0, bLength);
-                            //Console.WriteLine(Convert.ToHexString(byteV));
-                            //byteV.CopyTo(contentBlock, byteV.Length + k + (j * hcaHeader.channelCount) + (i * 0x80 * hcaHeader.channelCount));
                         }
                     }
                 }
-                //Console.WriteLine(l);
                 //fs.Write(contentBlock, 0, contentBlock.Length);
             }
             fs.Close();
