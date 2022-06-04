@@ -201,55 +201,56 @@ namespace GICutscenes
                 container.AddAudioTrack(f, language);
             }
 
-            if (!subs) return;  // no --subs option in the command
-
-            string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
-            if (!Directory.Exists(subsFolder))
-                throw new Exception(
-                    "Path value for the key SubsFolder is invalid : Directory does not exist.");
-            subsFolder = Path.GetFullPath(subsFolder);
-
-            string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
-            if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
+            if (subs)
             {
-                subName = Path.GetFileNameWithoutExtension(subName);
-                Console.WriteLine($"Subtitles name found: {subName}");
-                foreach (string d in Directory.EnumerateDirectories(subsFolder))
+                string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
+                if (!Directory.Exists(subsFolder))
+                    throw new Exception(
+                        "Path value for the key SubsFolder is invalid : Directory does not exist.");
+                subsFolder = Path.GetFullPath(subsFolder);
+
+                string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
+                if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
                 {
-                    string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
-                    string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
-                    switch (search.Length)
+                    subName = Path.GetFileNameWithoutExtension(subName);
+                    Console.WriteLine($"Subtitles name found: {subName}");
+                    foreach (string d in Directory.EnumerateDirectories(subsFolder))
                     {
-                        case 0:
-                            Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
-                            break;
-                        case 1:
-                            ASS sub = new(search[0], lang);
-                            string subFile = search[0];
-                            if (!sub.IsAss())
-                            {
-                                sub.ParseSrt();
-                                subFile = sub.ConvertToAss();
-                            }
+                        string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
+                        string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
+                        switch (search.Length)
+                        {
+                            case 0:
+                                Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
+                                break;
+                            case 1:
+                                ASS sub = new(search[0], lang);
+                                string subFile = search[0];
+                                if (!sub.IsAss())
+                                {
+                                    sub.ParseSrt();
+                                    subFile = sub.ConvertToAss();
+                                }
 
-                            container.AddSubtitlesTrack(subFile, lang);
-                            break;
-                        case 2:
-                            string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
-                                         throw new Exception(
-                                             $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
-                            container.AddSubtitlesTrack(res, lang);
-                            break;
-                        default:
-                            throw new Exception($"Too many results ({search.Length}), please report this case");
+                                container.AddSubtitlesTrack(subFile, lang);
+                                break;
+                            case 2:
+                                string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
+                                             throw new Exception(
+                                                 $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
+                                container.AddSubtitlesTrack(res, lang);
+                                break;
+                            default:
+                                throw new Exception($"Too many results ({search.Length}), please report this case");
+                        }
                     }
+
+                    // Adding attachments
+                    if (File.Exists("ja-jp.ttf")) container.AddAttachment("ja-jp.ttf", "Japanese Font"); else Console.WriteLine("ja-jp.ttf font not found, skipping...");
+                    if (File.Exists("zh-cn.ttf")) container.AddAttachment("zh-cn.ttf", "Chinese Font"); else Console.WriteLine("zh-cn.ttf font not found, skipping...");
                 }
-
-                // Adding attachments
-                if (File.Exists("ja-jp.ttf")) container.AddAttachment("ja-jp.ttf", "Japanese Font"); else Console.WriteLine("ja-jp.ttf font not found, skipping...");
-                if (File.Exists("zh-cn.ttf")) container.AddAttachment("zh-cn.ttf", "Chinese Font"); else Console.WriteLine("zh-cn.ttf font not found, skipping...");
-            } else Console.WriteLine($"No subtitles found for cutscene {basename}");
-
+                else Console.WriteLine($"No subtitles found for cutscene {basename}");
+            }
             // Merging the file
             container.Merge();
         }
