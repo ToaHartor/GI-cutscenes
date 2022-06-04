@@ -11,6 +11,7 @@ namespace GICutscenes
     {
         public string? version { get; set; }
         public string[]? videos { get; set; }
+        public Version[]? videoGroups { get; set; }
         public ulong? key { get; set; }
         public bool? encAudio { get; set; }
     }
@@ -42,9 +43,14 @@ namespace GICutscenes
             string jsonString = File.ReadAllText("versions.json");
             VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString);
             if (versions?.list == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
-            Version? v = Array.Find(versions.list, x => x.videos.Contains(videoFilename));
-            if (v?.key == null) throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
-            return (v.key ?? 0, v.encAudio ?? false);
+            Version? v = Array.Find(versions.list, x => (x.videos != null && x.videos.Contains(videoFilename)) || (x.videoGroups != null && Array.Exists(x.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))));
+            if (v == null) throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
+            ulong key = v.key ?? 0;
+            if (v.videoGroups != null)
+            {
+                key = Array.Find(v.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))?.key ?? throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
+            } 
+            return (key, v.encAudio ?? false);
         }
 
         public static ulong EncryptionKey(string videoFilename)
