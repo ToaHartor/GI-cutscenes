@@ -1,16 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
+	<OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+	<PublishSingleFile>true</PublishSingleFile>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<Authors>ToaHartor</Authors>
     <RootNamespace>GICutscenes</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<Description>A command line program playing with the cutscenes files (USM) from Genshin Impact.</Description>
+	<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+	<RepositoryUrl>https://github.com/ToaHartor/GI-cutscenes</RepositoryUrl>
+
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
 	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 	
-	<ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />

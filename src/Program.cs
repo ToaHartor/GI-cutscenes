@@ -68,10 +68,10 @@ namespace GICutscenes
             mergeOption.AddAlias("-m");
 
 
-            var rootCommand = new RootCommand("An .usm extraction tool for GI.");
+            var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
+            
             rootCommand.AddGlobalOption(outputFolderOption);
             rootCommand.AddGlobalOption(noCleanupOption);
-
 
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {

@@ -5,9 +5,7 @@ A command line program playing with the cutscenes files (USM) from Genshin Impac
 It is able to demux USM files, decrypt video and audio tracks, convert HCA files to WAV, convert SRT subtitles into ASS and merge all these extracted files into a single MKV file.
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game. Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this tool's fault).
 
-#### Cutscenes from version 1.0 to 2.6 can be decrypted.
-
-⚠️**Starting from 2.7, [these changes](https://github.com/ToaHartor/GI-cutscenes/issues/8) might be implemented for the second key**⚠️
+#### Cutscenes from version 1.0 to 2.7 can be decrypted.
 
 If you want to extract newer cutscenes but the `versions.json` in the released zip is outdated, simply download the updated file in the project tree ([here](https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json)) and replace the file.
 This file will be updated with the version key every time a new version drops.
@@ -28,7 +26,7 @@ I made a python tool a year ago (as a proof of concept) in order to be able to r
 ## Build
 
 This tool uses the .NET framework version 6.0, so you will need the .NET SDK.
-You can open this project in Visual Studio 2022 and build the solution, or use the dotnet CLI : `dotnet build -c Release`.
+You can open this project in Visual Studio 2022 and build the solution, or use the dotnet CLI : `dotnet publish -c Release -r [platform]`.
 
 ## Usage
 
@@ -36,11 +34,12 @@ You can follow the following steps to use this tool :
 
 ### 1. Download
 
-Grab the latest release from the [release page](https://github.com/ToaHartor/GI-cutscenes/releases), download the first ZIP file and extract it.
+Grab the latest release for your platform from the [release page](https://github.com/ToaHartor/GI-cutscenes/releases/latest), download the ZIP file and extract it.
+For each platform (Windows, Linux), two binaries are available: 
+- a standalone build (self-contained executable) which can be run without dotnet installed
+- a framework dependant build (if you already have dotnet installed on your machine), much lighter but requires the dotnet runtime
 
-Depending on the platform, the command line usage is different. In the examples below, replace `GICutscenes` with the right option depending on your platform :
-- For Windows, simply execute the .exe file : `./GICutscenes.exe`
-- For Linux, use the `dotnet` command to execute the dll `GICutscenes.dll` : `dotnet GICutscenes.dll [options]`
+You can also get a GUI version in this [repository](https://github.com/SuperZombi/GICutscenesUI) (thanks to [SuperZombi](https://github.com/SuperZombi))
 
 If you wish to merge all the files into a MKV, please install MKVToolNix (which provides mkvmerge) from [there](https://mkvtoolnix.download/downloads.html)
 
