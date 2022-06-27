@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.CommandLine;
 using GICutscenes.FileTypes;
+using GICutscenes.Mergers;
+using GICutscenes.Mergers.GIMKV;
 
 namespace GICutscenes
 {
@@ -189,16 +191,31 @@ namespace GICutscenes
 
         private static void MergeFiles(string outputPath, string basename, bool subs)
         {
-            MKV container = (File.Exists(
-                ((Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge" ) ? settings.MkvMergePath : "") 
-                    ?? "")
-                        ) ? new MKV(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new MKV(Path.Combine(outputPath, basename + ".mkv"));
-            container.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
+            MergeSolution solution = MergeSolution.INTERNAL;
+            Merger merger;
+            switch (solution)
+            {
+                case MergeSolution.INTERNAL:
+                    // Video track is already added
+                    merger = new GIMKV(basename, outputPath, "GI-Cutscenes v0.3.0", Path.Combine(outputPath, basename + ".ivf"));
+                    break;
+
+                case MergeSolution.MKVMERGE:
+                    merger = (File.Exists(
+                            ((Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge") ? settings.MkvMergePath : "")
+                            ?? "")) ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
+                    merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
+                    break;
+                // TODO: FFMPEG
+                default:
+                    throw new ArgumentException("Not implemented");
+            }
+            
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav"))
             {
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language)) // Extracting language number from filename
                     throw new FormatException($"Unable to parse the language code from the file {Path.GetFileName(f)}.");
-                container.AddAudioTrack(f, language);
+                merger.AddAudioTrack(f, language);
             }
 
             if (subs)
@@ -232,13 +249,13 @@ namespace GICutscenes
                                     subFile = sub.ConvertToAss();
                                 }
 
-                                container.AddSubtitlesTrack(subFile, lang);
+                                merger.AddSubtitlesTrack(subFile, lang);
                                 break;
                             case 2:
                                 string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
                                              throw new Exception(
                                                  $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
-                                container.AddSubtitlesTrack(res, lang);
+                                merger.AddSubtitlesTrack(res, lang);
                                 break;
                             default:
                                 throw new Exception($"Too many results ({search.Length}), please report this case");
@@ -246,13 +263,13 @@ namespace GICutscenes
                     }
 
                     // Adding attachments
-                    if (File.Exists("ja-jp.ttf")) container.AddAttachment("ja-jp.ttf", "Japanese Font"); else Console.WriteLine("ja-jp.ttf font not found, skipping...");
-                    if (File.Exists("zh-cn.ttf")) container.AddAttachment("zh-cn.ttf", "Chinese Font"); else Console.WriteLine("zh-cn.ttf font not found, skipping...");
+                    if (File.Exists("ja-jp.ttf")) merger.AddAttachment("ja-jp.ttf", "Japanese Font"); else Console.WriteLine("ja-jp.ttf font not found, skipping...");
+                    if (File.Exists("zh-cn.ttf")) merger.AddAttachment("zh-cn.ttf", "Chinese Font"); else Console.WriteLine("zh-cn.ttf font not found, skipping...");
                 }
                 else Console.WriteLine($"No subtitles found for cutscene {basename}");
             }
             // Merging the file
-            container.Merge();
+            merger.Merge();
         }
 
         private static void CleanFiles(string outputPath, string basename)
@@ -264,5 +281,12 @@ namespace GICutscenes
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }
+
+        internal enum MergeSolution
+        {
+            INTERNAL,
+            MKVMERGE
+        }
+
     }
 }
