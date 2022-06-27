@@ -6,6 +6,7 @@
     <TargetFramework>net6.0</TargetFramework>
 	<PublishSingleFile>true</PublishSingleFile>
 	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<PublishTrimmed>true</PublishTrimmed>
 	<Authors>ToaHartor</Authors>
     <RootNamespace>GICutscenes</RootNamespace>
 	<Description>A command line program playing with the cutscenes files (USM) from Genshin Impact.</Description>
@@ -30,6 +31,9 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="../versions.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="../README.md">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
