@@ -85,17 +85,12 @@ namespace GICutscenes.FileTypes
             if (size < 0x200) return;
             byte[] mask = new byte[0x20];
             Array.Copy(_videoMask2, mask, 0x20);
-            for (int i = 0x100; i < size; i++)
-            {
-                mask[i & 0x1F] = (byte)((data[i + dataOffset] ^= mask[i & 0x1F]) ^ _videoMask2[i & 0x1F]);
-            }
+            for (int i = 0x100; i < size; i++) mask[i & 0x1F] = (byte)((data[i + dataOffset] ^= mask[i & 0x1F]) ^ _videoMask2[i & 0x1F]);
             Array.Copy(_videoMask1, mask, 0x20);
-            for (int i = 0; i < 0x100; i++)
-            {
-                data[i + dataOffset] ^= mask[i & 0x1F] ^= data[0x100 + i + dataOffset];
-            }
+            for (int i = 0; i < 0x100; i++) data[i + dataOffset] ^= mask[i & 0x1F] ^= data[0x100 + i + dataOffset];
         }
 
+        // Not used anyway, but might be in the future
         private void MaskAudio(ref byte[] data, uint size)
         {
             const uint dataOffset = 0x140;
@@ -109,10 +104,13 @@ namespace GICutscenes.FileTypes
         public void Demux(bool videoExtract, bool audioExtract, string outputDir)
         {
 
-            FileStream filePointer = File.OpenRead(_path);
+            FileStream filePointer = File.OpenRead(_path);  // TODO: Use a binary reader
             long fileSize = filePointer.Length;
             Info info = new();
             Console.WriteLine($"Demuxing {_filename} : extracting video and audio...");
+
+            Dictionary<string, BinaryWriter> fileStreams = new(); // File paths as keys
+            string path;
 
             while (fileSize > 0)
             {
@@ -148,8 +146,9 @@ namespace GICutscenes.FileTypes
                                 if (videoExtract)
                                 {
                                     MaskVideo(ref data, size);
-                                    using FileStream stream = new(Path.Combine(outputDir, _filename[..^4]+ ".ivf"), FileMode.Append, FileAccess.Write);
-                                    stream.Write(data, 0, data.Length);
+                                    path = Path.Combine(outputDir, _filename[..^4] + ".ivf");
+                                    if (!fileStreams.ContainsKey(path)) fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                    fileStreams[path].Write(data);
                                 }
                                 break;
                             default: // Not implemented, we don't have any uses for it
@@ -165,8 +164,9 @@ namespace GICutscenes.FileTypes
                                 {
                                     // Might need some extra work if the audio has to be decrypted during the demuxing
                                     // (hello AudioMask)
-                                    using FileStream stream = new(Path.Combine(outputDir, _filename[..^4]+ $"_{info.chno}.hca"), FileMode.Append, FileAccess.Write);
-                                    stream.Write(data, 0, data.Length);
+                                    path = Path.Combine(outputDir, _filename[..^4] + $"_{info.chno}.hca");
+                                    if (!fileStreams.ContainsKey(path)) fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                    fileStreams[path].Write(data);
                                 }
                                 break;
                             default: // No need to implement it, we lazy
@@ -180,6 +180,9 @@ namespace GICutscenes.FileTypes
                 }
             }
 
+            // Closing Streams
+            filePointer.Close();
+            foreach (BinaryWriter stream in fileStreams.Values) stream.Close();
         }
     }
 

@@ -719,6 +719,7 @@ namespace GICutscenes.FileTypes
             wavData.dataSize = _hcaHeader.blockCount * 0x80 * 8 * wavRiff.fmtSamplingSize + (wavSmpl.loop_End - wavSmpl.loop_Start) * loop;
             wavRiff.riffSize = (uint)(0x1C + Marshal.SizeOf(wavData) + wavData.dataSize);
 
+
             // We do skip wavSmpl and wavNote, as they aren't useful to convert GI's HCA to WAV
             byte[] riffBytes = WAV.ToByteArray(wavRiff);
             byte[] dataBytes = WAV.ToByteArray(wavData);
