@@ -4,8 +4,8 @@
     <Version>0.3.0</Version>
 	<OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-	<PublishSingleFile>true</PublishSingleFile>
-	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>	
+	  <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
 	<PublishTrimmed>true</PublishTrimmed>
 	<Authors>ToaHartor</Authors>
     <RootNamespace>GICutscenes</RootNamespace>
@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0-preview.5.22301.12" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0-preview.5.22301.12" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0-preview.5.22301.12" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
   </ItemGroup>
 
 	<ItemGroup>

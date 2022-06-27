@@ -50,7 +50,7 @@ namespace GICutscenes.Mergers.GIMKV.MKV.Elements.Cluster
         }
 
         // Verify that the cluster won't exceed 5MB or have a length exceeding 5s
-        public bool CanBeAdded(int finalTimestamp, uint totalDataSize, int videoFrames = 0, int audioFrames = 0, int subsFrames = 0) => (finalTimestamp - timestamp) < GIMKV.ClusterSize && (totalDataSize + currentSize + 9 * videoFrames + 10 * audioFrames + 10 * subsFrames) < GIMKV.ClusterTimeLength;
+        public bool CanBeAdded(int finalTimestamp, uint totalDataSize, int videoFrames = 0, int audioFrames = 0, int subsFrames = 0) => (finalTimestamp - timestamp) < GIMKV.ClusterTimeLength && (totalDataSize + currentSize + 9 * videoFrames + 10 * audioFrames + 10 * subsFrames) < GIMKV.ClusterSize;
 
         // simple block is 5 (4 for the size), 4 for the data header of video, 5 for audio / subtitles will be 10 because of the blockGroup headers
     }

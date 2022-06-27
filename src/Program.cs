@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
@@ -69,6 +70,15 @@ namespace GICutscenes
             );
             mergeOption.AddAlias("-m");
 
+            var mkvEngineOption = new Option<string>(
+                name: "--mkv-engine",
+                description: "Merges the extracted content into a MKV container file."
+            ).FromAmong(
+                "mkvmerge",
+                "internal");
+            mkvEngineOption.SetDefaultValue("internal");
+            mkvEngineOption.AddAlias("-e");
+
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
             
@@ -81,14 +91,16 @@ namespace GICutscenes
                 key1Option,
                 key2Option,
                 subsOption,
-                mergeOption
+                mergeOption,
+                mkvEngineOption
             };
 
             var batchDemuxCommand = new Command("batchDemux", "Tries to demux all .usm files in the specified folder")
             {   
                 usmFolderArg,
                 subsOption,
-                mergeOption
+                mergeOption,
+                mkvEngineOption
             };
 
             //var hcaDecrypt = new Command();
@@ -104,26 +116,28 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, bool merge, bool subs, bool noCleanup) =>
-            {
-                await DemuxUsmCommand(file, key1, key2, output, merge, subs, noCleanup);
-            },
-            demuxFileOption, key1Option, key2Option, outputFolderOption, mergeOption, subsOption, noCleanupOption);
+            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) => 
+                {
+                    await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
+                }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
-            batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, bool merge, bool subs, bool noCleanup) =>
+
+            batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
-                await BatchDemuxCommand(inputDir, outputDir, merge, subs, noCleanup);
-            }, usmFolderArg, outputFolderOption, mergeOption, subsOption, noCleanupOption);
+                await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
+            },
+                usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
             convertHcaCommand.SetHandler(async (FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
             {
                 await ConvertHcaCommand(input, output /*, noCleanup*/);
-            }, hcaInputArg, outputFolderOption, noCleanupOption);
+            }, 
+                hcaInputArg, outputFolderOption, noCleanupOption);
 
             return Task.FromResult(rootCommand.InvokeAsync(args).Result);
         }
 
-        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, bool merge, bool subs, bool noCleanup)
+        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
         {
             if (file == null) throw new ArgumentNullException("No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
@@ -139,12 +153,12 @@ namespace GICutscenes
             Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg);
             if (merge)
             {
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
             }
         }
 
-        private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, bool merge, bool subs, bool noCleanup)
+        private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
         {
             if (inputDir is not { Exists: true }) throw new ArgumentNullException("Input directory is invalid.");
             string outputArg = (outputDir == null)
@@ -156,7 +170,7 @@ namespace GICutscenes
                 Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
                 if (!merge) continue;
 
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
             }
         }
@@ -189,18 +203,18 @@ namespace GICutscenes
             }
         }
 
-        private static void MergeFiles(string outputPath, string basename, bool subs)
+        private static void MergeFiles(string outputPath, string basename, string engine, bool subs)
         {
-            MergeSolution solution = MergeSolution.INTERNAL;
             Merger merger;
-            switch (solution)
+            switch (engine)
             {
-                case MergeSolution.INTERNAL:
+                case "internal":
+                    Console.WriteLine("Merging using the internal engine.");
                     // Video track is already added
                     merger = new GIMKV(basename, outputPath, "GI-Cutscenes v0.3.0", Path.Combine(outputPath, basename + ".ivf"));
                     break;
-
-                case MergeSolution.MKVMERGE:
+                case "mkvmerge":
+                    Console.WriteLine("Merging using mkvmerge.");
                     merger = (File.Exists(
                             ((Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge") ? settings.MkvMergePath : "")
                             ?? "")) ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
@@ -221,10 +235,10 @@ namespace GICutscenes
             if (subs)
             {
                 string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
+                subsFolder = Path.GetFullPath(subsFolder);
                 if (!Directory.Exists(subsFolder))
                     throw new Exception(
                         "Path value for the key SubsFolder is invalid : Directory does not exist.");
-                subsFolder = Path.GetFullPath(subsFolder);
 
                 string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
                 if (!string.IsNullOrEmpty(subName)) // Sometimes a cutscene has no subtitles (ChangeWeather), so we cna skip that part
@@ -281,12 +295,5 @@ namespace GICutscenes
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }
-
-        internal enum MergeSolution
-        {
-            INTERNAL,
-            MKVMERGE
-        }
-
     }
 }
