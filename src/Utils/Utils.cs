@@ -5,6 +5,7 @@ namespace GICutscenes.Utils
     {
         public static ushort Bswap(ushort v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             ushort r = (ushort)(v & 0xFF);
             r <<= 8;
             v >>= 8;
@@ -14,6 +15,7 @@ namespace GICutscenes.Utils
 
         public static short Bswap(short v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             short r = (short)(v & 0xFF);
             r <<= 8;
             v >>= 8;
@@ -23,6 +25,7 @@ namespace GICutscenes.Utils
 
         public static int Bswap(int v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             int r = v & 0xFF;
             r <<= 8;
             v >>= 8;
@@ -38,6 +41,7 @@ namespace GICutscenes.Utils
 
         public static uint Bswap(uint v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             uint r = v & 0xFF;
             r <<= 8;
             v >>= 8;
@@ -53,6 +57,7 @@ namespace GICutscenes.Utils
 
         public static long Bswap(long v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             long r = v & 0xFF;
             r <<= 8;
             v >>= 8;
@@ -80,6 +85,7 @@ namespace GICutscenes.Utils
 
         public static ulong Bswap(ulong v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             ulong r = v & 0xFF;
             r <<= 8;
             v >>= 8;
@@ -107,6 +113,7 @@ namespace GICutscenes.Utils
 
         public static float Bswap(float v)
         {
+            if (!BitConverter.IsLittleEndian) return v;
             uint i = Bswap(BitConverter.SingleToUInt32Bits(v));
             return BitConverter.UInt32BitsToSingle(i);
         }
