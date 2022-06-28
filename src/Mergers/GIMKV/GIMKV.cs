@@ -232,8 +232,10 @@ namespace GICutscenes.Mergers.GIMKV
             // Free the files
             FreeStreams();
 
+            string dest = _memoryMkv.Name[..^4];
             // Renaming file name to confirm the completion
-            File.Move(_memoryMkv.Name, _memoryMkv.Name[..^4]);
+            if (File.Exists(dest)) File.Delete(dest);
+            File.Move(_memoryMkv.Name, dest);
         }
 
         private void FreeStreams()

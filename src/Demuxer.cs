@@ -97,8 +97,6 @@ namespace GICutscenes
             if (!filePaths.TryGetValue("hca", out List<string> hcaPaths)) throw new Exception("No HCA files could be demuxed...");
 
             Task[] decodingTasks = new Task[hcaPaths.Count];
-            var timer = System.Diagnostics.Stopwatch.StartNew();
-
             for (int i = 0; i < decodingTasks.Length; i++)
             {
                 int j = i;
@@ -109,8 +107,6 @@ namespace GICutscenes
                 });
             }
             Task.WaitAll(decodingTasks);
-            timer.Stop();
-            Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
             Console.WriteLine("Extraction completed !");
         }
     }
