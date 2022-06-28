@@ -101,7 +101,7 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public void Demux(bool videoExtract, bool audioExtract, string outputDir)
+        public Dictionary<string, List<string>> Demux(bool videoExtract, bool audioExtract, string outputDir)
         {
 
             FileStream filePointer = File.OpenRead(_path);  // TODO: Use a binary reader
@@ -110,6 +110,7 @@ namespace GICutscenes.FileTypes
             Console.WriteLine($"Demuxing {_filename} : extracting video and audio...");
 
             Dictionary<string, BinaryWriter> fileStreams = new(); // File paths as keys
+            Dictionary<string, List<string>> filePaths = new();
             string path;
 
             while (fileSize > 0)
@@ -147,7 +148,12 @@ namespace GICutscenes.FileTypes
                                 {
                                     MaskVideo(ref data, size);
                                     path = Path.Combine(outputDir, _filename[..^4] + ".ivf");
-                                    if (!fileStreams.ContainsKey(path)) fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                    if (!fileStreams.ContainsKey(path))
+                                    {
+                                        fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                        if (!filePaths.ContainsKey("ivf")) filePaths.Add("ivf", new List<string>{path});
+                                        else filePaths["ivf"].Add(path);
+                                    }
                                     fileStreams[path].Write(data);
                                 }
                                 break;
@@ -165,7 +171,12 @@ namespace GICutscenes.FileTypes
                                     // Might need some extra work if the audio has to be decrypted during the demuxing
                                     // (hello AudioMask)
                                     path = Path.Combine(outputDir, _filename[..^4] + $"_{info.chno}.hca");
-                                    if (!fileStreams.ContainsKey(path)) fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                    if (!fileStreams.ContainsKey(path))
+                                    {
+                                        fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
+                                        if (!filePaths.ContainsKey("hca")) filePaths.Add("hca", new List<string> { path });
+                                        else filePaths["hca"].Add(path);
+                                    }
                                     fileStreams[path].Write(data);
                                 }
                                 break;
@@ -179,10 +190,10 @@ namespace GICutscenes.FileTypes
                         break;
                 }
             }
-
             // Closing Streams
             filePointer.Close();
             foreach (BinaryWriter stream in fileStreams.Values) stream.Close();
+            return filePaths;
         }
     }
 

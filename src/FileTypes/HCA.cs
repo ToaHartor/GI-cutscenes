@@ -698,7 +698,7 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public void ConvertToWAV(string outputDir)
+        public Task ConvertToWAV(string outputDir)
         {
             // default values
             uint volume = 1;
@@ -727,19 +727,19 @@ namespace GICutscenes.FileTypes
 
             // Opening the new wav file
             string wavFile = Path.Combine(outputDir, _filename[..^4] + ".wav");
-            FileStream fs = new(wavFile, FileMode.Create);
+            FileStream fs = new FileStream(wavFile, FileMode.Create);
             fs.Write(header, 0, header.Length);
             Console.WriteLine($"Converting {Path.GetFileName(_filename)} to wav...");
             _hcaHeader.volume *= volume;
 
-            byte[] data2 = new byte[_hcaHeader.blockSize];
+            byte[] buf = new byte[_hcaHeader.blockSize];
             // Skipping the block for the loop
+            MemoryStream ms = new MemoryStream((int)(8 * 0x80 * _hcaHeader.channelCount * (mode / 8)));
             uint offset = 0;
             for (uint l = 0; l < _hcaHeader.blockCount; l++, offset += _hcaHeader.blockSize) // iterating through hca blocks
             {
-                Array.Copy(_data, offset, data2, 0, _hcaHeader.blockSize);
-                DecodeBlock(ref data2);
-                //byte[] contentBlock = new byte[wavData.dataSize / hcaHeader.blockCount];
+                Array.Copy(_data, offset, buf, 0, _hcaHeader.blockSize);
+                DecodeBlock(ref buf);
                 for (int i = 0; i < 8; i++)
                 {
                     for (int j = 0; j < 0x80; j++)
@@ -780,13 +780,17 @@ namespace GICutscenes.FileTypes
                                     throw new Exception("This mode is not handled");
                             }
                             byte[] byteV = BitConverter.GetBytes(v);
-                            fs.Write(byteV, 0, bLength);
+                            ms.Write(byteV, 0, bLength);
                         }
                     }
                 }
-                //fs.Write(contentBlock, 0, contentBlock.Length);
+                ms.WriteTo(fs);
+                ms.Seek(0, SeekOrigin.Begin);
             }
             fs.Close();
+            ms.Close();
+
+            return Task.CompletedTask;
         }
     }
 }

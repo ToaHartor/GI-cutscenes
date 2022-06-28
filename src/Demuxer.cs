@@ -92,12 +92,25 @@ namespace GICutscenes
             }
 
             USM file = new(filenameArg, key1, key2);
-            file.Demux(true, true, output);
-            foreach (string f in Directory.EnumerateFiles(output, Path.GetFileNameWithoutExtension(filename) + "_*.hca"))
+            Dictionary<string, List<string>> filePaths = file.Demux(true, true, output);  // TODO: Return file list for easier parsing
+
+            if (!filePaths.TryGetValue("hca", out List<string> hcaPaths)) throw new Exception("No HCA files could be demuxed...");
+
+            Task[] decodingTasks = new Task[hcaPaths.Count];
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+
+            for (int i = 0; i < decodingTasks.Length; i++)
             {
-                Hca audioFile = new(f, key1, key2);
-                audioFile.ConvertToWAV(output);
+                int j = i;
+                decodingTasks[i] = Task.Run(() =>
+                {
+                    Hca audioFile = new(hcaPaths[j], key1, key2);
+                    audioFile.ConvertToWAV(output);
+                });
             }
+            Task.WaitAll(decodingTasks);
+            timer.Stop();
+            Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
             Console.WriteLine("Extraction completed !");
         }
     }
