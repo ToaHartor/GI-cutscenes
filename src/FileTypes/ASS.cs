@@ -6,7 +6,7 @@ namespace GICutscenes.FileTypes
     {
         private readonly string _srt;
         private readonly string _fontname;
-        private List<string> _dialogLines;
+        private readonly List<string> _dialogLines;
 
         public ASS(string srtFile, string lang)
         {

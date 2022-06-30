@@ -1,8 +1,10 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace GICutscenes.FileTypes
-{
-    public struct WAVEriff // size 36
+{ 
+    // Common interface for these types to be able to correctly marshal them (instead of using a dynamic type)
+    internal interface IWavStruct {}
+    internal struct WAVEriff: IWavStruct // size 36
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] riff;
@@ -35,7 +37,7 @@ namespace GICutscenes.FileTypes
         }
     }
 
-    public struct WAVEsmpl // size 68
+    internal struct WAVEsmpl: IWavStruct // size 68
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] smpl;
@@ -77,7 +79,7 @@ namespace GICutscenes.FileTypes
             loop_PlayCount = 0;
         }
     }
-    public struct WAVEnote // size 12
+    internal struct WAVEnote: IWavStruct // size 12
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] note;
@@ -91,7 +93,7 @@ namespace GICutscenes.FileTypes
             dwName = 0;
         }
     }
-    public struct WAVEdata // size 8
+    internal struct WAVEdata: IWavStruct // size 8
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] data;
@@ -104,9 +106,9 @@ namespace GICutscenes.FileTypes
         }
     }
 
-    public class WAV
+    internal class WAV
     {
-        public static byte[] ToByteArray(dynamic h)  // Should be one of the structs above
+        public static byte[] ToByteArray(IWavStruct h)  // Should be one of the structs above
         {
             int size = Marshal.SizeOf(h);
             byte[] arr = new byte[size];

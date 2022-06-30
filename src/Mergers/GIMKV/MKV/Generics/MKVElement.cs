@@ -2,7 +2,7 @@
 
 namespace GICutscenes.Mergers.GIMKV.MKV.Generics
 {
-    internal class MKVElement<T>
+    internal class MKVElement<T> : IMKVToBytes
     {
         private readonly byte[] _signature;
         private readonly T _data;

@@ -32,7 +32,7 @@
             if (_stream.ReadUInt32() != 0x46464952) throw new Exception("Wrong file type given : bad magic numbers.");
             WavHeader.riffSize = _stream.ReadUInt32();
             if (_stream.ReadUInt32() != 0x45564157) throw new Exception("Wrong file type given.");
-            if (_stream.ReadUInt32() != 0x20746D66) throw new Exception("fmt field couldn't be properly found");
+            if (_stream.ReadUInt32() != 0x20746D66) throw new MissingFieldException("fmt field couldn't be properly found");
             WavHeader.fmtSize = _stream.ReadUInt32();
             WavHeader.type = _stream.ReadUInt16();
             WavHeader.channelCount = _stream.ReadUInt16();
@@ -40,7 +40,7 @@
             WavHeader.samplesPerSec = _stream.ReadUInt32();
             WavHeader.samplingSize = _stream.ReadUInt16();
             WavHeader.bitCount = _stream.ReadUInt16();
-            if (_stream.ReadUInt32() != 0x61746164) throw new Exception("data field couldn't be properly found");
+            if (_stream.ReadUInt32() != 0x61746164) throw new MissingFieldException("data field couldn't be properly found");
             WavHeader.dataSize = _stream.ReadUInt32();
 
             Duration = (uint)Math.Round(WavHeader.dataSize * 8f / (WavHeader.bitCount * WavHeader.samplingRate * WavHeader.channelCount) * 1000f);

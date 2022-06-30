@@ -112,7 +112,6 @@ namespace GICutscenes.FileTypes
             Dictionary<string, BinaryWriter> fileStreams = new(); // File paths as keys
             Dictionary<string, List<string>> filePaths = new();
             string path;
-
             while (fileSize > 0)
             {
                 byte[] byteBlock = new byte[32];

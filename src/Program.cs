@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GICutscenes
 {
@@ -15,15 +15,19 @@ namespace GICutscenes
     internal sealed class Program
     {
         public static Settings settings;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Retrieves the configuration file")]
         private static Task<int> Main(string[] args)
         {
+            
             // Loading config file
+            // TODO: A LA MANO ?
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
                 .Build();
 
-            settings = config.GetRequiredSection("Settings").Get<Settings>();
+            settings = config.GetRequiredSection(nameof(Settings)).Get<Settings>();
 
             // CLI Options
             var demuxFileOption = new Argument<FileInfo?>(
@@ -124,7 +128,10 @@ namespace GICutscenes
 
             batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
+                var timer = System.Diagnostics.Stopwatch.StartNew();
                 await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
+                timer.Stop();
+                Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
             },
                 usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
@@ -160,7 +167,7 @@ namespace GICutscenes
 
         private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
         {
-            if (inputDir is not { Exists: true }) throw new ArgumentNullException("Input directory is invalid.");
+            if (inputDir is not { Exists: true }) throw new DirectoryNotFoundException("Input directory is invalid.");
             string outputArg = (outputDir == null)
                 ? inputDir.FullName
                 : ((outputDir.Exists) ? outputDir.FullName : throw new ArgumentException("Output directory is invalid."));
@@ -234,10 +241,10 @@ namespace GICutscenes
 
             if (subs)
             {
-                string subsFolder = settings.SubsFolder ?? throw new Exception("Configuration value is not set for the key SubsFolder.");
+                string subsFolder = settings.SubsFolder ?? throw new ArgumentException("Configuration value is not set for the key SubsFolder.");
                 subsFolder = Path.GetFullPath(subsFolder);
                 if (!Directory.Exists(subsFolder))
-                    throw new Exception(
+                    throw new ArgumentException(
                         "Path value for the key SubsFolder is invalid : Directory does not exist.");
 
                 string subName = ASS.FindSubtitles(basename, subsFolder) ?? "";//throw new FileNotFoundException($"Subtitles could not be found for file {basename}");
@@ -267,7 +274,7 @@ namespace GICutscenes
                                 break;
                             case 2:
                                 string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
-                                             throw new Exception(
+                                             throw new FileNotFoundException(
                                                  $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
                                 merger.AddSubtitlesTrack(res, lang);
                                 break;

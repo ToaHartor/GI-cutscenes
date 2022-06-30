@@ -780,7 +780,7 @@ namespace GICutscenes.FileTypes
                                     throw new Exception("This mode is not handled");
                             }
                             byte[] byteV = BitConverter.GetBytes(v);
-                            ms.Write(byteV, 0, bLength);
+                            ms.WriteAsync(byteV, 0, bLength);
                         }
                     }
                 }

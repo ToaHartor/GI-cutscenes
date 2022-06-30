@@ -1,8 +1,15 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using GICutscenes.FileTypes;
 
 namespace GICutscenes
 {
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(VersionList), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    internal partial class VersionJson : JsonSerializerContext
+    { }
+
     internal class VersionList
     {
         public Version[]? list { get; set; }
@@ -41,7 +48,7 @@ namespace GICutscenes
             if (!File.Exists("versions.json")) throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
             videoFilename = Path.GetFileNameWithoutExtension(videoFilename);
             string jsonString = File.ReadAllText("versions.json");
-            VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString);
+            VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString, VersionJson.Default.VersionList);
             if (versions?.list == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
             Version? v = Array.Find(versions.list, x => (x.videos != null && x.videos.Contains(videoFilename)) || (x.videoGroups != null && Array.Exists(x.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))));
             if (v == null) throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);

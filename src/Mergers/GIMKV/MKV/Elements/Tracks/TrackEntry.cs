@@ -33,7 +33,7 @@ namespace GICutscenes.Mergers.GIMKV.MKV.Elements.Tracks
                 FlagLacing = new MKVElement<byte>(Signatures.FlagLacing, 0x00);  // No lacing
             }
             CodecID = new MKVElement<string>(Signatures.CodecID, codec);
-            if (trackTypeID is 0x01 or 0x02) SpecificSettings = specSettings ?? throw new Exception("Specific settings for a Track Entry is null, while it has to be entered according to the track type.");
+            if (trackTypeID is 0x01 or 0x02) SpecificSettings = specSettings ?? throw new ArgumentNullException("Specific settings for a Track Entry is null, while it has to be entered according to the track type.");
 
             if (trackTypeID is 0x01 or 0x11 && codecPrivate != null) CodecPrivate = new MKVElement<byte[]>(Signatures.CodecPrivate, codecPrivate);
 

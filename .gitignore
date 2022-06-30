@@ -400,3 +400,5 @@ FodyWeavers.xsd
 
 # Visual Studio Properties
 Properties/
+
+.editorconfig

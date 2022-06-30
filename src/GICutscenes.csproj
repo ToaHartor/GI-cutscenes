@@ -4,7 +4,6 @@
     <Version>0.3.0</Version>
 	<OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-	  <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>	
 	  <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
 	<PublishTrimmed>true</PublishTrimmed>
 	<Authors>ToaHartor</Authors>
@@ -17,6 +16,10 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	<DebugType>embedded</DebugType>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryType>git</RepositoryType>
+	<AnalysisLevel>latest-all</AnalysisLevel>
+	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,6 +29,10 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>full</DebugType>
+	<PublishSingleFile>true</PublishSingleFile>
+	<TieredCompilation>true</TieredCompilation>
+	<PublishReadyToRun>true</PublishReadyToRun>
+	<!--<RunAOTCompilation>true</RunAOTCompilation>-->
   </PropertyGroup>
 	
   <ItemGroup>
@@ -45,5 +52,13 @@
 		<Content Include="../README.md">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 </Project>
