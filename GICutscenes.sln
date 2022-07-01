@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "�
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		appsettings.json = appsettings.json
+		build-all.sh = build-all.sh
 		LICENSE = LICENSE
 		README.md = README.md
 		versions.json = versions.json

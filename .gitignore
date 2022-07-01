@@ -402,3 +402,5 @@ FodyWeavers.xsd
 Properties/
 
 .editorconfig
+# Release files
+.zip
