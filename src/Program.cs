@@ -11,6 +11,8 @@ namespace GICutscenes
     {
         public string? MkvMergePath { get; set; }
         public string? SubsFolder { get; set; }
+        public string? FfmpegPath { get; set; }
+
     }
     internal sealed class Program
     {
@@ -79,7 +81,8 @@ namespace GICutscenes
                 description: "Merges the extracted content into a MKV container file."
             ).FromAmong(
                 "mkvmerge",
-                "internal");
+                "internal",
+                "ffmpeg");
             mkvEngineOption.SetDefaultValue("internal");
             mkvEngineOption.AddAlias("-e");
 
@@ -222,12 +225,18 @@ namespace GICutscenes
                     break;
                 case "mkvmerge":
                     Console.WriteLine("Merging using mkvmerge.");
-                    merger = (File.Exists(
-                            ((Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge") ? settings.MkvMergePath : "")
-                            ?? "")) ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
+                    merger = File.Exists(
+                            Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge" ? settings.MkvMergePath : "")
+                        ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
-                // TODO: FFMPEG
+                case "ffmpeg":
+                    Console.WriteLine("Merging using ffmpeg.");
+                    merger = File.Exists(
+                        Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "") 
+                        ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings.FfmpegPath) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
+                    merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
+                    break;
                 default:
                     throw new ArgumentException("Not implemented");
             }

@@ -22,7 +22,6 @@ namespace GICutscenes.Mergers
                 case PlatformID.Unix:
                     mkvmergePath = "mkvmerge";  // Provided the binary is in the PATH
                     break;
-                case PlatformID.Other:
                 default:
                     throw new PlatformNotSupportedException("Default mkvmerge path for this OS isn't registered...");
             }
@@ -59,10 +58,10 @@ namespace GICutscenes.Mergers
             _command += $@" --track-name 0:""{MKV.SubsLang[giLanguage].Item2}"" --language 0:{MKV.SubsLang[giLanguage].Item1} --default-track 0:0 --forced-track 0:0 -D -A -s 0 ""{subFile}""";
         }
 
-        public void AddAttachment(string attachement, string description)
+        public void AddAttachment(string attachment, string description)
         {
-            if (!File.Exists(attachement)) throw new FileNotFoundException($"Attachment file {attachement} not found.");
-            _command += $@" --attachment-description ""{description}"" --attach-file ""{attachement}""";
+            if (!File.Exists(attachment)) throw new FileNotFoundException($"Attachment file {attachment} not found.");
+            _command += $@" --attachment-description ""{description}"" --attach-file ""{attachment}""";
         }
 
         public void Merge()
