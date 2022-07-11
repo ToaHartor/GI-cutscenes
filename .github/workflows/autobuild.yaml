@@ -30,10 +30,10 @@ jobs:
           release_name="GICutscenes-$version-${{ matrix.arch }}"
 
           # Self contained
-          dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name" --self-contained
+          dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name_standalone" --self-contained
 
           # Framework dependant
-          dotnet publish -c Release -r $r --self-contained false -p:PublishTrimmed=false
+          dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name" --self-contained false -p:PublishTrimmed=false
 
           if [ "${{ matrix.arch }}" == "win-x64" ]; then
             # Pack for standalone version
