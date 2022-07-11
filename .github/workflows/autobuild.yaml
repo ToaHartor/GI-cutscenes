@@ -1,0 +1,56 @@
+name: Publish new version
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        arch: ['win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx.11.0-arm64', 'osx.12-arm64']
+        
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.301
+
+      - name: Build
+        shell: bash
+        run: |
+          version=$(cat src/GICutscenes.csproj | grep -oP "<Version>\K([0-9]\.[0-9]\.[0-9])")
+          release_name_standalone="GICutscenes-$version-${{ matrix.arch }}-standalone"
+          release_name="GICutscenes-$version-${{ matrix.arch }}"
+
+          # Self contained
+          dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name_standalone" --self-contained
+
+          # Framework dependant
+          dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name" --self-contained false -p:PublishTrimmed=false
+
+          if [ "${{ matrix.arch }}" == "win-x64" ]; then
+            # Pack for standalone version
+            7z a -tzip "${release_name_standalone}.zip" "./${release_name_standalone}/*"
+            
+            # Pack for Framework dependant version
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          else
+            tar czvf "${release_name_standalone}.tar.gz" "$release_name_standalone"
+            
+            tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+
+          rm -r "$release_name_standalone"
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "GICutscenes-*"
