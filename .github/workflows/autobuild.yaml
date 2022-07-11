@@ -1,0 +1,50 @@
+name: Publish new version
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        arch: ['win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx.11.0-arm64', 'osx.12-arm64']
+        
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.301
+
+      - name: Build
+        shell: bash
+        run: |
+          version=$(cat src/GICutscenes.csproj | grep -oP "<Version>\K([0-9]\.[0-9]\.[0-9])")
+          release_name_standalone="GICutscenes-$version-${{ matrix.target }}-standalone.zip"
+          release_name="GICutscenes-$version-${{ matrix.target }}.zip"
+
+          # Self contained
+          dotnet publish -c Release -r "${{ matrix.target }}" -o "$release_name" --self-contained
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+
+          else
+            tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "GICutscenes-*"
