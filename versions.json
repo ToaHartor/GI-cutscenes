@@ -49,6 +49,43 @@
                     "videos": ["Cs_LiYue_LQ110261501_YelanStory_Boy", "Cs_LiYue_LQ110261501_YelanStory_Girl"]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "2.8",
+            "videoGroups": [
+                {
+                    "key": 5623150388305012,
+                    "version": "40067",
+                    "videos": ["Cs_MD_EQ400671001_KazuhaMemory"]
+                },
+                {
+                    "key": 3865005622692177,
+                    "version": "40070",
+                    "videos": [
+                        "Cs_MD_EQ400701001_XinyanPlay"
+                    ]
+                },
+                {
+                    "key": 2376853844266094,
+                    "version": "40073",
+                    "videos": [
+                        "Cs_MD_EQ400731001_FischlFantasy"
+                    ]
+                },
+                {
+                    "key": 2320676109514370,
+                    "version": "40076",
+                    "videos": [
+                        "Cs_MD_EQ400761001_MonaDivination"
+                    ]
+                },
+                {
+                    "key": 2850973778349534,
+                    "version": "40065",
+                    "videos": ["Cs_MD_EQ400650301_IslandFlash_Boy", "Cs_MD_EQ400650301_IslandFlash_Girl"]
+                }
+            ]
         }
     ]
 }
