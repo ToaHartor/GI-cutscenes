@@ -33,8 +33,12 @@ namespace GICutscenes.FileTypes
             //if (splitLines.Length % 3 != 0) throw new Exception($"Line count is invalid, got {splitLines.Length}");
             for (uint i = 0; i < splitLines.Length; i++)
             {
-                if (i + 2 >= splitLines.Length) break; // Case when the last block has no line and timings (hi Ambor_Readings)
-                if (!int.TryParse(splitLines[i], out _)) throw new Exception("Dialogue block doesn't start with a number");
+                if (i + 2 >= splitLines.Length) break; // Case when the last block has no line and timings (hi Ambor_Readings), therefore we skip
+                if (!int.TryParse(splitLines[i], out _)) // If the next line is not a number 
+                {
+                    if (string.IsNullOrEmpty(splitLines[i])) continue; // Well, if it's empty, then we just have to skip and try again (Issue #30)
+                    else throw new Exception("Dialogue block doesn't start with a number");
+                }
                 MatchCollection m = Regex.Matches(splitLines[i + 1], @"-?\d\d:\d\d:\d\d,\d\d");
                 // We skip this iteration if there isn't any match : dialogue line is empty
                 if (m.Count != 2) // throw new Exception($"Start and stop times couldn't be correctly parsed: {splitLines[i+1]}");
@@ -115,6 +119,32 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
                 return search[0][..^3];
             // Maybe more cases will be needed to fix this
             return null;
+        }
+
+        public static void ConvertAllSrt(string subsFolder)
+        {
+            string? file = null;
+            //file = "ID/Cs_Inazuma_EQ4002207_ShikishogunRecalling_Boy_ID.txt";
+            if (file == null)
+            {
+                foreach (string langDir in Directory.EnumerateDirectories(subsFolder))
+                {
+                    foreach (string srtFile in Directory.GetFiles(langDir, "*.txt"))
+                    {
+                        ASS newAss = new(srtFile, Path.GetDirectoryName(langDir) ?? "unk");
+                        newAss.ParseSrt();
+                        newAss.ConvertToAss();
+                    }
+                }
+            }
+            else
+            {
+                ASS newAss = new(Path.Combine(subsFolder, file), Path.GetDirectoryName(file) ?? "unk");
+                newAss.ParseSrt();
+                newAss.ConvertToAss();
+            }
+
+            Environment.Exit(0);
         }
     }
 }
