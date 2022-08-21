@@ -160,7 +160,7 @@ namespace GICutscenes
             Console.WriteLine($"Output folder : {outputArg}");
             byte[] key1Arg = Convert.FromHexString(key1 ?? "");
             byte[] key2Arg = Convert.FromHexString(key2 ?? "");
-            Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg);
+            Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg, engine);
             if (merge)
             {
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs);
@@ -177,7 +177,7 @@ namespace GICutscenes
             Console.WriteLine($"Output folder : {outputArg}");
             foreach (string f in Directory.EnumerateFiles(inputDir.FullName, "*.usm"))
             {
-                Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
+                Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg, engine);
                 if (!merge) continue;
 
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs);
@@ -216,6 +216,7 @@ namespace GICutscenes
         private static void MergeFiles(string outputPath, string basename, string engine, bool subs)
         {
             Merger merger;
+            String audioSuffix = ".wav";
             switch (engine)
             {
                 case "internal":
@@ -236,12 +237,13 @@ namespace GICutscenes
                         Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "") 
                         ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings.FfmpegPath) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
+                    audioSuffix = ".hca";  //ffmpeg decode decrypted hca files
                     break;
                 default:
                     throw new ArgumentException("Not implemented");
             }
             
-            foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav"))
+            foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*{audioSuffix}"))
             {
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language)) // Extracting language number from filename
                     throw new FormatException($"Unable to parse the language code from the file {Path.GetFileName(f)}.");

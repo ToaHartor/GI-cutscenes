@@ -20,11 +20,13 @@
 	<RepositoryType>git</RepositoryType>
 	<AnalysisLevel>latest-all</AnalysisLevel>
 	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
     <DebugType>full</DebugType>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -32,6 +34,7 @@
 	<PublishSingleFile>true</PublishSingleFile>
 	<TieredCompilation>true</TieredCompilation>
 	<PublishReadyToRun>true</PublishReadyToRun>
+	<FileAlignment>512</FileAlignment>
 	<!--<RunAOTCompilation>true</RunAOTCompilation>-->
   </PropertyGroup>
 	

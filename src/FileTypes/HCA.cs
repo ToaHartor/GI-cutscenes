@@ -109,7 +109,8 @@ namespace GICutscenes.FileTypes
 
     public class Hca
     {
-        private readonly string _filename;
+        private readonly string audioName;
+
         private readonly byte[] _key1;
         private readonly byte[] _key2;
         private readonly byte[] _ciphTable;
@@ -119,10 +120,14 @@ namespace GICutscenes.FileTypes
         private Channel[] _hcaChannel; // usually of size 0x10
         private byte[] _header;
         private byte[] _data;
+        private int _ciperTypeOffset = 0; //used to export decrypt hca
 
-        public Hca(string filename, byte[]? key1 = null, byte[]? key2 = null)
+        public Hca(string filename, byte[]? key1 = null, byte[]? key2 = null, byte[]? hcaData = null)
         {
-            _filename = filename;
+            FileStream hcaFile;
+            audioName = filename;
+            int audioSize;
+            byte[] headerMagic = new byte[8];
             if (key1 == null || key2 == null)  // if no key is provided, then attempt to automatically find the keys based to the filenames in versions.json
             {
                 FileInfo f = new(filename);
@@ -136,7 +141,30 @@ namespace GICutscenes.FileTypes
             _key2 = key2;
             _ciphTable = new byte[0x100];
             _hcaHeader = new HCAHeader();
-            _header = ReadHeader();
+            if (hcaData is null)
+            {
+                // Read data from file
+                if (!File.Exists(audioName)) throw new FileNotFoundException();
+                if (!audioName.EndsWith(".hca")) throw new FileLoadException();
+                hcaFile = File.OpenRead(audioName);
+                hcaFile.Read(headerMagic, 0, 8);
+                checkHeader(headerMagic);
+                hcaFile.Seek(0, SeekOrigin.Begin);
+                _header = new byte[_hcaHeader.dataOffset];
+                hcaFile.Read(_header, 0, _header.Length);
+                LoadHeader(ref _header, _encrypted);
+                audioSize = (int)(_hcaHeader.blockSize * _hcaHeader.blockCount);
+                _data = new byte[audioSize];
+                hcaFile.Read(_data, 0, audioSize);
+                hcaFile.Close();
+            }
+            else 
+            {
+                checkHeader(hcaData.Take(8).ToArray());
+                _header = hcaData.Take(_hcaHeader.dataOffset).ToArray();
+                LoadHeader(ref _header, _encrypted);
+                _data = hcaData.Skip(_hcaHeader.dataOffset).Take((int)(_hcaHeader.blockSize * _hcaHeader.blockCount)).ToArray();
+            }
         }
 
         private byte[] Init56_CreateTable(byte key)
@@ -239,6 +267,7 @@ namespace GICutscenes.FileTypes
 
         private void Mask(ref byte[] data, int size)
         {
+            if (_hcaHeader.ciphType == 0) { return; }
             for (int i = 0; size > 0; i++, size--)
             {
                 byte d = data[i];
@@ -286,15 +315,8 @@ namespace GICutscenes.FileTypes
             return sum;
         }
 
-        private byte[] ReadHeader()
+        private void checkHeader(byte[] hcaBytes)
         {
-            if (!File.Exists(_filename)) throw new FileNotFoundException();
-            if (!_filename.EndsWith(".hca")) throw new FileLoadException();
-            FileStream filePointer = File.OpenRead(_filename);
-
-            byte[] hcaBytes = new byte[8];
-            filePointer.Read(hcaBytes, 0, hcaBytes.Length);
-
             uint magic = 0xFFFFFFFF;
             uint sign = BitConverter.ToUInt32(hcaBytes, 0) & 0x7F7F7F7F;
             if (sign == 0x00414348u)
@@ -315,15 +337,23 @@ namespace GICutscenes.FileTypes
                 Console.WriteLine("Wrong header, exiting...");
                 Environment.Exit(0);
             }
+        }
 
-            byte[] header = new byte[_hcaHeader.dataOffset];
-            filePointer.Seek(0, SeekOrigin.Begin);
-            filePointer.Read(header, 0, header.Length);
-            Array.Copy(hcaBytes, 0, header, 0, hcaBytes.Length);
+        private void LoadHeader(ref byte[] header, bool _encrypted)
+        {
+            if (_encrypted)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    header[i] &= 0x7f;
+                }
+            }
+
             int headerOffset = 8;
 
             // fmt
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            uint sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f;}
 
             if (sign == 0x00746D66u) // fmt
             {
@@ -344,7 +374,8 @@ namespace GICutscenes.FileTypes
             }
 
             // comp or dec
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x706D6F63u) // comp
             {
@@ -390,7 +421,8 @@ namespace GICutscenes.FileTypes
             }
 
             // vbr
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
             if (sign == 0x00726276u) // vbr
             {
                 //Console.WriteLine("vbr");
@@ -399,7 +431,8 @@ namespace GICutscenes.FileTypes
             }
 
             // ath
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x00687461u) // ath
             {
@@ -414,7 +447,8 @@ namespace GICutscenes.FileTypes
             }
 
             // loop
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x706F6F6Cu) // loop
             {
@@ -429,13 +463,15 @@ namespace GICutscenes.FileTypes
             }
 
             // ciph
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x68706963u) // ciph
             {
                 //Console.WriteLine("ciph");
                 BitConverter.GetBytes(sign).CopyTo(header, headerOffset);
-                _hcaHeader.ciphType = Tools.Bswap(BitConverter.ToUInt16(header, headerOffset + 4));
+                _ciperTypeOffset = headerOffset + 4;
+                _hcaHeader.ciphType = Tools.Bswap(BitConverter.ToUInt16(header, _ciperTypeOffset));
                 if (_hcaHeader.ciphType is not (0 or 1 or 0x38)) throw new Exception("Invalid cipher type: " + _hcaHeader.ciphType);
                 headerOffset += 6;
             }
@@ -445,7 +481,8 @@ namespace GICutscenes.FileTypes
             }
 
             // rva
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x00617672u) // rva
             {
@@ -460,7 +497,8 @@ namespace GICutscenes.FileTypes
             }
 
             // comm
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x6D6D6F63u) // comm
             {
@@ -470,7 +508,8 @@ namespace GICutscenes.FileTypes
             }
 
             // pad
-            sign = BitConverter.ToUInt32(header, headerOffset) & magic;
+            sign = BitConverter.ToUInt32(header, headerOffset);
+            if (_encrypted) { sign &= 0x7f7f7f7f; }
 
             if (sign == 0x00646170u) // pad
             {
@@ -480,21 +519,28 @@ namespace GICutscenes.FileTypes
             }
             //Console.WriteLine("Finished parsing header...");
             BitConverter.GetBytes(Tools.Bswap(CheckSum(header, header.Length - 2))).CopyTo(header, header.Length - 2);
-            _data = new byte[_hcaHeader.blockSize * _hcaHeader.blockCount];
-            filePointer.Read(_data, 0, (int)(_hcaHeader.blockSize * _hcaHeader.blockCount));
-            filePointer.Close();
+
             ATHInit();
             InitMask(_hcaHeader.ciphType);
 
             if (_hcaHeader.comp_r03 == 0) _hcaHeader.comp_r03 = 1;
 
             ChannelInit();
-
-            return header;
         }
 
-        public void Decrypt()  // TODO : Add parameter to save decrypted hca to disk
+        public Task Decrypt(string? output=null) // I don't know how to use async in C#
         {
+            if (output == null) { output = audioName; }
+            FileStream exportFile = File.OpenWrite(output);
+
+            //modify header to unencrypted mode
+            byte[] header = new byte[_header.Length];
+            Buffer.BlockCopy(_header, 0, header, 0, _header.Length);
+            byte[] decryptType = { 0, 0 };
+            decryptType.CopyTo(header, _ciperTypeOffset);
+            BitConverter.GetBytes(Tools.Bswap(CheckSum(header, header.Length - 2))).CopyTo(header, header.Length - 2);
+            exportFile.Write(header, 0, header.Length);
+
             //if (!File.Exists(filename)) throw new FileNotFoundException();
             //if (!filename.EndsWith(".hca")) throw new FileLoadException();
             //FileStream filePointer = File.OpenRead(filename);
@@ -502,21 +548,29 @@ namespace GICutscenes.FileTypes
             //byte[] content = new byte[hcaHeader.blockSize * hcaHeader.blockCount];
             byte[] data2 = new byte[_hcaHeader.blockSize];
 
-            InitMask(_hcaHeader.ciphType);
-            Console.WriteLine("Decrypting content...");
+            //InitMask(_hcaHeader.ciphType);
+            //Console.WriteLine("Decrypting content...");
             if (_hcaHeader.ciphType != 0)
             { //a = hcaHeader.dataOffset
                 for (uint i = 0, a = 0; i < _hcaHeader.blockCount; i++, a += _hcaHeader.blockSize)
                 {
+                    //Console.WriteLine($"{Path.GetFileNameWithoutExtension(audioName)}: i为{i}, blockCount为{_hcaHeader.blockCount}，{i < _hcaHeader.blockCount}");
                     Array.Copy(_data, a, data2, 0, _hcaHeader.blockSize);
                     //filePointer.Seek(a, SeekOrigin.Begin);
                     //filePointer.Read(data2, 0, hcaHeader.blockSize);
                     //Console.WriteLine(Convert.ToHexString(data2));
                     Mask(ref data2, _hcaHeader.blockSize);
                     BitConverter.GetBytes(Tools.Bswap(CheckSum(data2, _hcaHeader.blockSize - 2))).CopyTo(data2, _hcaHeader.blockSize - 2); // checksum inclusion
-                    Array.Copy(data2, 0, _data, a, _hcaHeader.blockSize); // a - hcaHeader.dataOffset
+                    exportFile.Write(data2);
+                    // a - hcaHeader.dataOffset
                 }
             }
+            else
+            {
+                exportFile.Write(_data);
+            }
+            exportFile.Close();
+            return Task.CompletedTask;
             //filePointer.Close();
             //this.data = content;
 
@@ -726,10 +780,10 @@ namespace GICutscenes.FileTypes
             byte[] header = riffBytes.Concat(dataBytes).ToArray();
 
             // Opening the new wav file
-            string wavFile = Path.Combine(outputDir, _filename[..^4] + ".wav");
+            string wavFile = Path.Combine(outputDir, audioName[..^4] + ".wav");
             FileStream fs = new FileStream(wavFile, FileMode.Create);
             fs.Write(header, 0, header.Length);
-            Console.WriteLine($"Converting {Path.GetFileName(_filename)} to wav...");
+            Console.WriteLine($"Converting {Path.GetFileName(audioName)} to wav...");
             _hcaHeader.volume *= volume;
 
             byte[] buf = new byte[_hcaHeader.blockSize];

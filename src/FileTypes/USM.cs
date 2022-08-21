@@ -101,7 +101,7 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public Dictionary<string, List<string>> Demux(bool videoExtract, bool audioExtract, string outputDir)
+        public Dictionary<String, MemoryStream> Demux(bool videoExtract, bool audioExtract, string outputDir)
         {
 
             FileStream filePointer = File.OpenRead(_path);  // TODO: Use a binary reader
@@ -111,6 +111,7 @@ namespace GICutscenes.FileTypes
 
             Dictionary<string, BinaryWriter> fileStreams = new(); // File paths as keys
             Dictionary<string, List<string>> filePaths = new();
+            Dictionary<String, MemoryStream> hcaDataMap = new(); 
             string path;
             while (fileSize > 0)
             {
@@ -170,13 +171,8 @@ namespace GICutscenes.FileTypes
                                     // Might need some extra work if the audio has to be decrypted during the demuxing
                                     // (hello AudioMask)
                                     path = Path.Combine(outputDir, _filename[..^4] + $"_{info.chno}.hca");
-                                    if (!fileStreams.ContainsKey(path))
-                                    {
-                                        fileStreams.Add(path, new BinaryWriter(new FileStream(path, FileMode.Create, FileAccess.Write)));
-                                        if (!filePaths.ContainsKey("hca")) filePaths.Add("hca", new List<string> { path });
-                                        else filePaths["hca"].Add(path);
-                                    }
-                                    fileStreams[path].Write(data);
+                                    if (!hcaDataMap.ContainsKey(path)) { hcaDataMap.Add(path, new MemoryStream()); }
+                                    hcaDataMap[path].Write(data);
                                 }
                                 break;
                             default: // No need to implement it, we lazy
@@ -192,7 +188,7 @@ namespace GICutscenes.FileTypes
             // Closing Streams
             filePointer.Close();
             foreach (BinaryWriter stream in fileStreams.Values) stream.Close();
-            return filePaths;
+            return hcaDataMap;
         }
     }
 
