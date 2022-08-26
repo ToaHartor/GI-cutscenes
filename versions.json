@@ -86,6 +86,17 @@
                     "videos": ["Cs_MD_EQ400650301_IslandFlash_Boy", "Cs_MD_EQ400650301_IslandFlash_Girl"]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "3.0",
+            "videoGroups": [
+                {
+                    "key": 2690561074476991,
+                    "version": "301301",
+                    "videos": ["Cs_Sumeru_AQ30130101_DofFG_Girl", "Cs_Sumeru_AQ30130101_DofFG_Boy"]
+                }
+            ]
         }
     ]
 }
