@@ -81,7 +81,7 @@ namespace GICutscenes
             return (key1, key2);
         }
 
-        public static void Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output)
+        public static void Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output, string engine)
         {
             if (!File.Exists(filenameArg)) throw new FileNotFoundException($"File {filenameArg} doesn't exist...");
             string filename = Path.GetFileName(filenameArg);
@@ -99,19 +99,21 @@ namespace GICutscenes
             }
 
             USM file = new(filenameArg, key1, key2);
-            Dictionary<string, List<string>> filePaths = file.Demux(true, true, output);  // TODO: Return file list for easier parsing
+            Dictionary<String, MemoryStream> hcaData = file.Demux(true, true, output);  // TODO: Return file list for easier parsing
 
-            if (!filePaths.TryGetValue("hca", out List<string> hcaPaths)) throw new Exception("No HCA files could be demuxed...");
+            //if (!filePaths.TryGetValue("hca", out List<string> hcaPaths)) throw new Exception("No HCA files could be demuxed...");
 
-            Task[] decodingTasks = new Task[hcaPaths.Count];
-            for (int i = 0; i < decodingTasks.Length; i++)
+            Task[] decodingTasks = new Task[hcaData.Count];
+            int count = 0;
+            foreach(KeyValuePair<String, MemoryStream> hca in hcaData)
             {
-                int j = i;
-                decodingTasks[i] = Task.Run(() =>
+                decodingTasks[count] = Task.Run(() =>
                 {
-                    Hca audioFile = new(hcaPaths[j], key1, key2);
-                    audioFile.ConvertToWAV(output);
+                    Hca audioFile = new(hca.Key, key1, key2, hcaData: hca.Value.GetBuffer());
+                    hca.Value.Dispose();
+                    if(engine == "ffmpeg") { audioFile.Decrypt(); } else { audioFile.ConvertToWAV(output); } //ffmpeg support decrypted hca decode                      
                 });
+                count += 1;
             }
             Task.WaitAll(decodingTasks);
             Console.WriteLine("Extraction completed !");
