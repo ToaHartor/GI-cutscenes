@@ -221,7 +221,7 @@ namespace GICutscenes
                 case "internal":
                     Console.WriteLine("Merging using the internal engine.");
                     // Video track is already added
-                    merger = new GIMKV(basename, outputPath, "GI-Cutscenes v0.4.0", Path.Combine(outputPath, basename + ".ivf"));
+                    merger = new GIMKV(basename, outputPath, "GI-Cutscenes v0.4.1", Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 case "mkvmerge":
                     Console.WriteLine("Merging using mkvmerge.");
