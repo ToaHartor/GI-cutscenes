@@ -184,6 +184,9 @@ namespace GICutscenes.FileTypes
                         }
                         break;
 
+                    case 0x40435545: // @CUE - Might be used to play a certain part of the video, but shouldn't be needed anyway (appears in cutscene Cs_Sumeru_AQ30161501_DT)
+                        Console.WriteLine("@CUE field detected in USM, skipping as we don't need it");
+                        break;
                     default:
                         Console.WriteLine("Signature {0} unknown, skipping...", info.signature);
                         break;
