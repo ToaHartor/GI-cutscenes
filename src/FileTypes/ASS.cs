@@ -4,6 +4,7 @@ namespace GICutscenes.FileTypes
 {
     internal class ASS
     {
+        public static readonly string[] SubsExtensions = {".ass", ".srt", ".txt"};
         private readonly string _srt;
         private readonly string _fontname;
         private readonly List<string> _dialogLines;

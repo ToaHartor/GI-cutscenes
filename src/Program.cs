@@ -264,14 +264,22 @@ namespace GICutscenes
                     foreach (string d in Directory.EnumerateDirectories(subsFolder))
                     {
                         string lang = Path.GetFileName(d) ?? throw new DirectoryNotFoundException();
-                        string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*");
+                        string[] search = Directory.GetFiles(d, $"{subName}_{lang}.*").OrderBy(f => f).ToArray(); // Sorting by name
                         switch (search.Length)
                         {
                             case 0:
                                 Console.WriteLine($"No subtitle for {subName} could be found for the language {lang}, skipping...");
                                 break;
                             case 1:
-                                ASS sub = new(search[0], lang);
+                            // Could be either the presence of both .srt and .txt files (following the 3.0 release), but also .ass
+                            case 2:
+                            // Might be .srt+.txt+.ass
+                            case 3:
+                                // The "search" array is sorted by name, which means that the file order would be ASS > SRT > TXT
+                                string res = Array.Find(search, name => ASS.SubsExtensions.Contains(Path.GetExtension(name))) ?? throw new FileNotFoundException(
+                                                 $"No valid file could be found for the subs {subName} while the files corresponding to the name is {search.Length}"); ;
+                                Console.WriteLine($"Using subs file {Path.GetFileName(res)}");
+                                ASS sub = new(res, lang);
                                 string subFile = search[0];
                                 if (!sub.IsAss())
                                 {
@@ -280,12 +288,6 @@ namespace GICutscenes
                                 }
 
                                 merger.AddSubtitlesTrack(subFile, lang);
-                                break;
-                            case 2:
-                                string res = Array.Find(search, name => Path.GetExtension(name) == ".ass") ??
-                                             throw new FileNotFoundException(
-                                                 $"No ASS file could be found for the subs {subName}, but two files were matched previously, please report this case.");
-                                merger.AddSubtitlesTrack(res, lang);
                                 break;
                             default:
                                 throw new Exception($"Too many results ({search.Length}), please report this case");
