@@ -19,6 +19,8 @@ namespace GICutscenes.Mergers.GIMKV
         public static readonly uint TimestampScale = 1000000;
         public static readonly uint ClusterTimeLength = 3000; // In milliseconds
         public static readonly uint ClusterSize = 3000000; // In bytes
+        public static readonly ulong[] unkLength = { 0x7F, 0x3FFF, 0x1FFFFF, 0xFFFFFFF, 0x7FFFFFFFF, 0x3FFFFFFFFFF, 0x1FFFFFFFFFFFF };
+
 
         private readonly Random _random;
         private List<string> _hexUIDs;
@@ -288,6 +290,13 @@ namespace GICutscenes.Mergers.GIMKV
 
         public static byte[] FieldLength(uint length)
         {
+            // Avoiding lengths to take a value corresponding to an unknown field
+            bool unkContains = false;
+            if (unkLength.Contains(length))
+            {
+                length += 1;
+                unkContains = true;
+            }
             // VarInt shenanigans
             uint len = length switch
             {
@@ -297,11 +306,12 @@ namespace GICutscenes.Mergers.GIMKV
                 < 0x10000000 => length + 0x10000000,
                 _ => throw new Exception($"Number {length} is too big for the VarInt specification")
             };
+            if (unkContains) len -= 1;
             byte[] arr = BitConverter.GetBytes(len);
             Array.Reverse(arr);  // Field length is written in BE
             return TrimZeroes(arr);
         }
-
+        
         private void AddSingleBlockToCluster(int timestamp, BaseParser p, ParserManager parsers, Cluster? curCluster = null)
         {
             curCluster ??= GetLatestCluster();

@@ -8,6 +8,17 @@ EBMLMaxSizeLength 42 F3 (81) (08) -> 08
 Doctype           42 82 (88) (6D 61 74 72 6F 73 6B 61)  -> matroska
 Doctype version   42 87 (81) (04)
 Doctype read ver  42 85 (81) (02)
+
+
+///
+Note on Unknown fields from EBML
+
+There was a problem when field lengths had particular values, which were in fact equal to 2^(n*7)-1
+The EBML standard considers that those values define unknown values/fields/data, and this can cause an entire cluster to be corrupted.
+A workaround found is to increment the length by one before transforming it into a varint, then decrease the value by one. Therefore, the length number has an additional byte, and does not belong to the particular values.
+
+Sources : https://github.com/ietf-wg-cellar/ebml-specification/blob/master/specification.markdown#unknown-data-size
+///
 												527440771
 Segment 18 53 80 67 (01 00 00 00) (1F 70 1B 4F) -> 527440719 (BE) // using uint64 if needed I guess, but we shouldn't have any use for it, since it shouldn't exceed 4GB
 	SeekHead 11 4D 9B 74 (CF) 
