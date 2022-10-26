@@ -21,11 +21,11 @@ namespace GICutscenes
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Retrieves the configuration file")]
         private static Task<int> Main(string[] args)
         {
-            
+
             // Loading config file
             // TODO: A LA MANO ?
             IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"))
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -88,7 +88,7 @@ namespace GICutscenes
 
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
-            
+
             rootCommand.AddGlobalOption(outputFolderOption);
             rootCommand.AddGlobalOption(noCleanupOption);
 
@@ -103,7 +103,7 @@ namespace GICutscenes
             };
 
             var batchDemuxCommand = new Command("batchDemux", "Tries to demux all .usm files in the specified folder")
-            {   
+            {
                 usmFolderArg,
                 subsOption,
                 mergeOption,
@@ -123,7 +123,7 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) => 
+            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
                 {
                     await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
                 }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
@@ -141,7 +141,7 @@ namespace GICutscenes
             convertHcaCommand.SetHandler(async (FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
             {
                 await ConvertHcaCommand(input, output /*, noCleanup*/);
-            }, 
+            },
                 hcaInputArg, outputFolderOption, noCleanupOption);
 
             return Task.FromResult(rootCommand.InvokeAsync(args).Result);
@@ -153,7 +153,7 @@ namespace GICutscenes
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
             if (!file.Name.EndsWith(".usm"))
                 throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
-            if (key1!=null && key2!= null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
+            if (key1 != null && key2 != null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
             string outputArg = output == null
                 ? file.Directory.FullName
                 : ((output.Exists) ? output.FullName : throw new ArgumentException("Output directory is invalid."));
@@ -233,14 +233,14 @@ namespace GICutscenes
                 case "ffmpeg":
                     Console.WriteLine("Merging using ffmpeg.");
                     merger = File.Exists(
-                        Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "") 
+                        Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "")
                         ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings.FfmpegPath) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 default:
                     throw new ArgumentException("Not implemented");
             }
-            
+
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav"))
             {
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language)) // Extracting language number from filename
