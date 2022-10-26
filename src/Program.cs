@@ -4,6 +4,7 @@ using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace GICutscenes
 {
@@ -16,20 +17,11 @@ namespace GICutscenes
     }
     internal sealed class Program
     {
-        public static Settings settings;
+        public static Settings? settings;
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Retrieves the configuration file")]
         private static Task<int> Main(string[] args)
         {
-
-            // Loading config file
-            // TODO: A LA MANO ?
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"))
-                .AddEnvironmentVariables()
-                .Build();
-
-            settings = config.GetRequiredSection(nameof(Settings)).Get<Settings>();
 
             // CLI Options
             var demuxFileOption = new Argument<FileInfo?>(
@@ -92,6 +84,8 @@ namespace GICutscenes
             rootCommand.AddGlobalOption(outputFolderOption);
             rootCommand.AddGlobalOption(noCleanupOption);
 
+            var resetCommand = new Command("reset", "Reset 'appsettings.json' file to default.");
+
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
                 demuxFileOption,
@@ -117,20 +111,33 @@ namespace GICutscenes
                 hcaInputArg
             };
 
+            rootCommand.AddCommand(resetCommand);
             rootCommand.AddCommand(demuxUsmCommand);
             rootCommand.AddCommand(batchDemuxCommand);
             rootCommand.AddCommand(convertHcaCommand);
+
+            resetCommand.SetHandler(() =>
+            {
+                var obj = new { Settings = new Settings { FfmpegPath = "", MkvMergePath = "", SubsFolder = "" } };
+                var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), json);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("'appsettings.json' has reset to default.");
+                Console.ResetColor();
+            });
 
 
             // Command Handlers
             demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
                 {
+                ReadSetting();
                     await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
                 }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
 
             batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
+                ReadSetting();
                 var timer = System.Diagnostics.Stopwatch.StartNew();
                 await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
                 timer.Stop();
@@ -146,6 +153,31 @@ namespace GICutscenes
 
             return Task.FromResult(rootCommand.InvokeAsync(args).Result);
         }
+
+
+        [RequiresUnreferencedCode("Calls Microsoft.Extensions.Configuration.ConfigurationBinder.Get<T>()")]
+        private static void ReadSetting()
+        {
+            if (settings is null)
+            {
+                // Loading config file
+                // TODO: A LA MANO ?
+                IConfiguration config = new ConfigurationBuilder()
+                    .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"))
+                    .AddEnvironmentVariables()
+                    .Build();
+
+                settings = config?.GetSection(nameof(Settings)).Get<Settings>();
+                if (settings is null)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("File 'appsettings.json' has error section, use command 'reset' to reset it to default.");
+                    Console.ResetColor();
+                    Environment.Exit(1);
+                }
+            }
+        }
+
 
         private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
         {
