@@ -129,10 +129,10 @@ namespace GICutscenes
 
             // Command Handlers
             demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
-                {
+            {
                 ReadSetting();
-                    await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
-                }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
+                await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
+            }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
 
             batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
@@ -181,13 +181,13 @@ namespace GICutscenes
 
         private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
         {
-            if (file == null) throw new ArgumentNullException("No file provided.");
+            if (file == null) throw new ArgumentNullException(nameof(file), "No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
             if (!file.Name.EndsWith(".usm"))
                 throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
             if (key1 != null && key2 != null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
             string outputArg = output == null
-                ? file.Directory.FullName
+                ? file.Directory!.FullName
                 : ((output.Exists) ? output.FullName : throw new ArgumentException("Output directory is invalid."));
             Console.WriteLine($"Output folder : {outputArg}");
             byte[] key1Arg = Convert.FromHexString(key1 ?? "");
@@ -258,15 +258,15 @@ namespace GICutscenes
                 case "mkvmerge":
                     Console.WriteLine("Merging using mkvmerge.");
                     merger = File.Exists(
-                            Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge" ? settings.MkvMergePath : "")
-                        ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
+                        Path.GetFileNameWithoutExtension(settings?.MkvMergePath)?.ToLower() == "mkvmerge" ? settings?.MkvMergePath : "")
+                        ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings!.MkvMergePath!) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 case "ffmpeg":
                     Console.WriteLine("Merging using ffmpeg.");
                     merger = File.Exists(
-                        Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "")
-                        ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings.FfmpegPath) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
+                        Path.GetFileNameWithoutExtension(settings?.FfmpegPath)?.ToLower() == "ffmpeg" ? settings?.FfmpegPath : "")
+                        ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings!.FfmpegPath!) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 default:
@@ -282,7 +282,7 @@ namespace GICutscenes
 
             if (subs)
             {
-                string subsFolder = settings.SubsFolder ?? throw new ArgumentException("Configuration value is not set for the key SubsFolder.");
+                string subsFolder = settings?.SubsFolder ?? throw new ArgumentException("Configuration value is not set for the key SubsFolder.");
                 subsFolder = Path.GetFullPath(subsFolder);
                 if (!Directory.Exists(subsFolder))
                     throw new ArgumentException(
