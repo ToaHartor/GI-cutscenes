@@ -84,8 +84,6 @@ namespace GICutscenes
             rootCommand.AddGlobalOption(outputFolderOption);
             rootCommand.AddGlobalOption(noCleanupOption);
 
-            var resetCommand = new Command("reset", "Reset 'appsettings.json' file to default.");
-
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
                 demuxFileOption,
@@ -111,20 +109,12 @@ namespace GICutscenes
                 hcaInputArg
             };
 
-            rootCommand.AddCommand(resetCommand);
+            var resetCommand = new Command("reset", "Reset 'appsettings.json' file to default.");
+
             rootCommand.AddCommand(demuxUsmCommand);
             rootCommand.AddCommand(batchDemuxCommand);
             rootCommand.AddCommand(convertHcaCommand);
-
-            resetCommand.SetHandler(() =>
-            {
-                var obj = new { Settings = new Settings { FfmpegPath = "", MkvMergePath = "", SubsFolder = "" } };
-                var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), json);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("'appsettings.json' has reset to default.");
-                Console.ResetColor();
-            });
+            rootCommand.AddCommand(resetCommand);
 
 
             // Command Handlers
@@ -142,14 +132,22 @@ namespace GICutscenes
                 await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
-            },
-                usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
+            }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
             convertHcaCommand.SetHandler(async (FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
             {
                 await ConvertHcaCommand(input, output /*, noCleanup*/);
-            },
-                hcaInputArg, outputFolderOption, noCleanupOption);
+            }, hcaInputArg, outputFolderOption, noCleanupOption);
+
+            resetCommand.SetHandler(() =>
+            {
+                var obj = new { Settings = new Settings { FfmpegPath = "", MkvMergePath = "", SubsFolder = "" } };
+                var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), json);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("'appsettings.json' has reset to default.");
+                Console.ResetColor();
+            });
 
             return Task.FromResult(rootCommand.InvokeAsync(args).Result);
         }
