@@ -1,11 +1,14 @@
 ﻿using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
+using GICutscenes.Utils;
 using Microsoft.Extensions.Configuration;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text.Json;
 
 namespace GICutscenes
@@ -80,17 +83,22 @@ namespace GICutscenes
             mkvEngineOption.SetDefaultValue("internal");
             mkvEngineOption.AddAlias("-e");
 
+            var notOpenBrowserOption = new Option<bool>(
+                name: "-n",
+                description: "Do not open browser if there's new version.");
+
             var stackTraceOption = new Option<bool>(
                 name: "--stack-trace",
                 description: "Show stack trace when throw exception.");
             stackTraceOption.AddAlias("-st");
 
+            var proxyOption = new Option<string>(
+                name: "--proxy",
+                description: "Specifies a proxy server for the request.");
+            proxyOption.AddAlias("-p");
+
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
-
-            rootCommand.AddGlobalOption(outputFolderOption);
-            rootCommand.AddGlobalOption(noCleanupOption);
-            rootCommand.AddGlobalOption(stackTraceOption);
 
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
@@ -99,7 +107,9 @@ namespace GICutscenes
                 key2Option,
                 subsOption,
                 mergeOption,
-                mkvEngineOption
+                mkvEngineOption,
+                outputFolderOption,
+                noCleanupOption,
             };
 
             var batchDemuxCommand = new Command("batchDemux", "Tries to demux all .usm files in the specified folder")
@@ -107,14 +117,23 @@ namespace GICutscenes
                 usmFolderArg,
                 subsOption,
                 mergeOption,
-                mkvEngineOption
+                mkvEngineOption,
+                outputFolderOption,
+                noCleanupOption,
             };
 
             //var hcaDecrypt = new Command();
 
             var convertHcaCommand = new Command("convertHca", "Converts input .hca files into .wav files")
             {
-                hcaInputArg
+                hcaInputArg,
+                outputFolderOption,
+            };
+
+            var updateCommand = new Command("update", "Update for usm secret key and GICutscenes.")
+            {
+                notOpenBrowserOption,
+                proxyOption,
             };
 
             var resetCommand = new Command("reset", "Reset 'appsettings.json' file to default.");
@@ -122,6 +141,7 @@ namespace GICutscenes
             rootCommand.AddCommand(demuxUsmCommand);
             rootCommand.AddCommand(batchDemuxCommand);
             rootCommand.AddCommand(convertHcaCommand);
+            rootCommand.AddCommand(updateCommand);
             rootCommand.AddCommand(resetCommand);
 
 
@@ -136,7 +156,7 @@ namespace GICutscenes
             batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
                 ReadSetting();
-                var timer = System.Diagnostics.Stopwatch.StartNew();
+                var timer = Stopwatch.StartNew();
                 BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
@@ -146,6 +166,11 @@ namespace GICutscenes
             {
                 ConvertHcaCommand(input, output /*, noCleanup*/);
             }, hcaInputArg, outputFolderOption, noCleanupOption);
+
+            updateCommand.SetHandler(async (bool notOpenBrowser, string proxy) =>
+            {
+                await UpdateAsync(notOpenBrowser, proxy);
+            }, notOpenBrowserOption, proxyOption);
 
             resetCommand.SetHandler(() =>
             {
@@ -363,5 +388,56 @@ namespace GICutscenes
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }
+
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+        private static async Task UpdateAsync(bool notOpenBroswer, string? proxy)
+        {
+            var webProxy = new WebProxy(proxy);
+            var client = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All, Proxy = webProxy });
+            client.DefaultRequestHeaders.Add("User-Agent", "GICutscenes");
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Update 'versions.json'...");
+            Console.ResetColor();
+            var versionsString = await client.GetStringAsync("https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json");
+            await File.WriteAllTextAsync(Path.Combine(AppContext.BaseDirectory, "versions.json"), versionsString);
+            Console.WriteLine("'versions.json' has updated to the latest version.");
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Check update for GICutscenes...");
+            Console.ResetColor();
+            var releaseString = await client.GetStringAsync("https://api.github.com/repos/ToaHartor/GI-cutscenes/releases/latest");
+            var release = JsonSerializer.Deserialize<GithubRelease>(releaseString!);
+            var currentVersion = typeof(Program).Assembly.GetName().Version;
+            if (System.Version.TryParse(release?.TagName?[1..], out var latestVersion))
+            {
+                if (latestVersion > currentVersion)
+                {
+
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine($"Latest version is '{release?.TagName}', GICutscenes needs to update.");
+                    Console.ResetColor();
+                    if (!notOpenBroswer)
+                    {
+                        if (!string.IsNullOrWhiteSpace(release?.HtmlUrl))
+                        {
+                            // What happens on macOS or Linux?
+                            Process.Start(new ProcessStartInfo(release.HtmlUrl) { UseShellExecute = true });
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("GICutscenes is already the latest version.");
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine($"Cannot compare version, current version is '{currentVersion}', latest version is '{release?.TagName}'.");
+                Console.ResetColor();
+            }
+        }
+
     }
 }
