@@ -126,25 +126,25 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
+            demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
             {
                 ReadSetting();
-                await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
+                DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
             }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
 
-            batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
+            batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
                 ReadSetting();
                 var timer = System.Diagnostics.Stopwatch.StartNew();
-                await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
+                BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
             }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
-            convertHcaCommand.SetHandler(async (FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
+            convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
             {
-                await ConvertHcaCommand(input, output /*, noCleanup*/);
+                ConvertHcaCommand(input, output /*, noCleanup*/);
             }, hcaInputArg, outputFolderOption, noCleanupOption);
 
             resetCommand.SetHandler(() =>
@@ -197,7 +197,7 @@ namespace GICutscenes
         }
 
 
-        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
+        private static void DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
         {
             if (file == null) throw new ArgumentNullException(nameof(file), "No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
@@ -218,7 +218,7 @@ namespace GICutscenes
             }
         }
 
-        private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
+        private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
         {
             if (inputDir is not { Exists: true }) throw new DirectoryNotFoundException("Input directory is invalid.");
             string outputArg = (outputDir == null)
@@ -235,7 +235,7 @@ namespace GICutscenes
             }
         }
 
-        private static async Task ConvertHcaCommand(FileSystemInfo input, DirectoryInfo? output)
+        private static void ConvertHcaCommand(FileSystemInfo input, DirectoryInfo? output)
         {
             if (!input.Exists) throw new ArgumentException("No file or directory given.");
             string outputArg = (output == null)
