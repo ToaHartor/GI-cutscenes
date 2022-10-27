@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.CommandLine;
-using GICutscenes.FileTypes;
+﻿using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
+using Microsoft.Extensions.Configuration;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -20,7 +22,7 @@ namespace GICutscenes
         public static Settings? settings;
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Retrieves the configuration file")]
-        private static Task<int> Main(string[] args)
+        private static int Main(string[] args)
         {
 
             // CLI Options
@@ -78,11 +80,17 @@ namespace GICutscenes
             mkvEngineOption.SetDefaultValue("internal");
             mkvEngineOption.AddAlias("-e");
 
+            var stackTraceOption = new Option<bool>(
+                name: "--stack-trace",
+                description: "Show stack trace when throw exception.");
+            stackTraceOption.AddAlias("-st");
+
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
 
             rootCommand.AddGlobalOption(outputFolderOption);
             rootCommand.AddGlobalOption(noCleanupOption);
+            rootCommand.AddGlobalOption(stackTraceOption);
 
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
@@ -149,7 +157,19 @@ namespace GICutscenes
                 Console.ResetColor();
             });
 
-            return Task.FromResult(rootCommand.InvokeAsync(args).Result);
+            return new CommandLineBuilder(rootCommand).UseDefaults().UseExceptionHandler((ex, context) =>
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                if (context.ParseResult.GetValueForOption(stackTraceOption))
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                else
+                {
+                    Console.Error.WriteLine($"{ex.GetType()}: {ex.Message}");
+                }
+                Console.ResetColor();
+            }).Build().Invoke(args);
         }
 
 
