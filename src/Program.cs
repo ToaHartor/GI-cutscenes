@@ -43,7 +43,7 @@ namespace GICutscenes
 
             var outputFolderOption = new Option<DirectoryInfo?>(
                 name: "--output",
-                description: "Output folder."
+                description: "Output folder, default is './output'."
                 );
             outputFolderOption.AddAlias("-o");
 
@@ -151,6 +151,8 @@ namespace GICutscenes
             demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
             {
                 ReadSetting();
+                output ??= new DirectoryInfo("./output");
+                output.Create();
                 DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
             }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
@@ -158,16 +160,20 @@ namespace GICutscenes
             batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
             {
                 ReadSetting();
+                outputDir ??= new DirectoryInfo("./output");
+                outputDir.Create();
                 var timer = Stopwatch.StartNew();
                 BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
             }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
 
-            convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
+            convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output) =>
             {
-                ConvertHcaCommand(input, output /*, noCleanup*/);
-            }, hcaInputArg, outputFolderOption, noCleanupOption);
+                output ??= new DirectoryInfo("./output");
+                output.Create();
+                ConvertHcaCommand(input, output);
+            }, hcaInputArg, outputFolderOption);
 
             updateCommand.SetHandler(async (bool notOpenBrowser, string proxy) =>
             {
