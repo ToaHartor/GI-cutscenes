@@ -84,18 +84,20 @@ namespace GICutscenes
             mkvEngineOption.AddAlias("-e");
 
             var notOpenBrowserOption = new Option<bool>(
-                name: "-n",
+                name: "--no-browser",
                 description: "Do not open browser if there's new version.");
+            notOpenBrowserOption.AddAlias("-nb");
+
+            var proxyOption = new Option<string>(
+               name: "--proxy",
+               description: "Specifies a proxy server for the request.");
+            proxyOption.AddAlias("-p");
 
             var stackTraceOption = new Option<bool>(
                 name: "--stack-trace",
                 description: "Show stack trace when throw exception.");
             stackTraceOption.AddAlias("-st");
 
-            var proxyOption = new Option<string>(
-                name: "--proxy",
-                description: "Specifies a proxy server for the request.");
-            proxyOption.AddAlias("-p");
 
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
@@ -416,6 +418,7 @@ namespace GICutscenes
 
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine($"Latest version is '{release?.TagName}', GICutscenes needs to update.");
+                    Console.WriteLine($"Release page: {release?.HtmlUrl}");
                     Console.ResetColor();
                     if (!notOpenBroswer)
                     {
