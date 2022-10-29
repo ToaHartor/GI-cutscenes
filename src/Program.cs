@@ -407,7 +407,7 @@ namespace GICutscenes
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine("Update 'versions.json'...");
             Console.ResetColor();
-            var versionsString = await client.GetStringAsync("https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json");
+            var versionsString = await client.GetStringAsync("https://cdn.jsdelivr.net/gh/ToaHartor/GI-cutscenes@main/versions.json");
             await File.WriteAllTextAsync(Path.Combine(AppContext.BaseDirectory, "versions.json"), versionsString);
             Console.WriteLine("'versions.json' has updated to the latest version.");
 
