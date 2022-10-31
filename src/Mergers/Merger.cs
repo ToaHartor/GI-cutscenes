@@ -13,5 +13,7 @@
 
         void Merge();
 
+        void Merge(string audioFormat, string videoFormat) { }
+
     }
 }

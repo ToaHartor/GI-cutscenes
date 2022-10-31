@@ -84,14 +84,24 @@ namespace GICutscenes
             mkvEngineOption.SetDefaultValue("internal");
             mkvEngineOption.AddAlias("-e");
 
+            var audioFormatOption = new Option<string>(
+                name: "--audio-format",
+                description: "Audio encode format in MKV file, the original is PCM.");
+            audioFormatOption.AddAlias("-af");
+
+            var videoFormatOption = new Option<string>(
+                name: "--video-format",
+                description: "Video encode format in MKV file, the original is VP9.");
+            videoFormatOption.AddAlias("-vf");
+
             var notOpenBrowserOption = new Option<bool>(
-                name: "--no-browser",
-                description: "Do not open browser if there's new version.");
+               name: "--no-browser",
+               description: "Do not open browser if there's new version.");
             notOpenBrowserOption.AddAlias("-nb");
 
             var proxyOption = new Option<string>(
-               name: "--proxy",
-               description: "Specifies a proxy server for the request.");
+              name: "--proxy",
+              description: "Specifies a proxy server for the request.");
             proxyOption.AddAlias("-p");
 
             var stackTraceOption = new Option<bool>(
@@ -99,9 +109,9 @@ namespace GICutscenes
                 description: "Show stack trace when throw exception.");
             stackTraceOption.AddAlias("-st");
 
-
-
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
+
+            rootCommand.AddGlobalOption(stackTraceOption);
 
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
@@ -111,6 +121,8 @@ namespace GICutscenes
                 subsOption,
                 mergeOption,
                 mkvEngineOption,
+                audioFormatOption,
+                videoFormatOption,
                 outputFolderOption,
                 noCleanupOption,
             };
@@ -121,6 +133,8 @@ namespace GICutscenes
                 subsOption,
                 mergeOption,
                 mkvEngineOption,
+                audioFormatOption,
+                videoFormatOption,
                 outputFolderOption,
                 noCleanupOption,
             };
@@ -149,25 +163,25 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) =>
+            demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat) =>
             {
                 ReadSetting();
                 output ??= new DirectoryInfo("./output");
                 output.Create();
-                DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
-            }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
+                DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup, audioFormat, videoFormat);
+            }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption);
 
 
-            batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
+            batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat) =>
             {
                 ReadSetting();
                 outputDir ??= new DirectoryInfo("./output");
                 outputDir.Create();
                 var timer = Stopwatch.StartNew();
-                BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
+                BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup, audioFormat, videoFormat);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
-            }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
+            }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption);
 
             convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output) =>
             {
@@ -238,8 +252,7 @@ namespace GICutscenes
             }
         }
 
-
-        private static void DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
+        private static void DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat)
         {
             if (file == null) throw new ArgumentNullException(nameof(file), "No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
@@ -255,7 +268,7 @@ namespace GICutscenes
             Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg);
             if (merge)
             {
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs, audioFormat, videoFormat);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
             }
             if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
@@ -264,7 +277,7 @@ namespace GICutscenes
             }
         }
 
-        private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
+        private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat)
         {
             if (inputDir is not { Exists: true }) throw new DirectoryNotFoundException("Input directory is invalid.");
             string outputArg = (outputDir == null)
@@ -276,7 +289,7 @@ namespace GICutscenes
                 Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
                 if (!merge) continue;
 
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs, audioFormat, videoFormat);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
             }
             if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
@@ -313,9 +326,13 @@ namespace GICutscenes
             }
         }
 
-        private static void MergeFiles(string outputPath, string basename, string engine, bool subs)
+        private static void MergeFiles(string outputPath, string basename, string engine, bool subs, string audioFormat, string videoFormat)
         {
             Merger merger;
+            if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
+            {
+                engine = "ffmpeg";
+            }
             switch (engine)
             {
                 case "internal":
@@ -401,7 +418,14 @@ namespace GICutscenes
                 else Console.WriteLine($"No subtitles found for cutscene {basename}");
             }
             // Merging the file
-            merger.Merge();
+            if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
+            {
+                merger.Merge(audioFormat, videoFormat);
+            }
+            else
+            {
+                merger.Merge();
+            }
         }
 
         private static void CleanFiles(string outputPath, string basename)

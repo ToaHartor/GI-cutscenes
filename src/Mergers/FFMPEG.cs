@@ -107,5 +107,14 @@ namespace GICutscenes.Mergers
             Process process = Process.Start(_ffmpeg, _command);
             process.WaitForExit();
         }
+
+        public void Merge(string audioFormat, string videoFormat)
+        {
+            _command += string.Join(" ", _inputOptions) + string.Join(" ", _mapOptions) + string.Join(" ", _metadataOptions);
+            _command += $" -c:a \"{(string.IsNullOrWhiteSpace(audioFormat) ? "copy" : audioFormat)}\" -c:v \"{(string.IsNullOrWhiteSpace(videoFormat) ? "copy" : videoFormat)}\" \"{_output}\"";
+            //Console.WriteLine(_ffmpeg + _command);
+            Process process = Process.Start(_ffmpeg, _command);
+            process.WaitForExit();
+        }
     }
 }
