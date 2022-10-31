@@ -82,13 +82,13 @@ namespace GICutscenes.FileTypes
                 [V4+ Styles]
                 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
                 """);
-            if (string.IsNullOrWhiteSpace(Program.settings?.SubtiteStyle))
+            if (string.IsNullOrWhiteSpace(Program.settings?.SubsStyle))
             {
                 sb.AppendLine($"Style: Default,{_fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1");
             }
             else
             {
-                sb.AppendLine(Program.settings?.SubtiteStyle.Replace("{fontname}", _fontname));
+                sb.AppendLine(Program.settings?.SubsStyle.Replace("{fontname}", _fontname));
             }
             sb.AppendLine("""
                 

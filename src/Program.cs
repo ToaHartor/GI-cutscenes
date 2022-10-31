@@ -18,7 +18,7 @@ namespace GICutscenes
         public string? MkvMergePath { get; set; }
         public string? SubsFolder { get; set; }
         public string? FfmpegPath { get; set; }
-        public string? SubtiteStyle { get; set; }
+        public string? SubsStyle { get; set; }
 
     }
     internal sealed class Program
@@ -203,7 +203,7 @@ namespace GICutscenes
                     "MkvMergePath": "",
                     "FfmpegPath": "",
                     "SubsFolder": "",
-                    "SubtiteStyle": "Style: Default,{fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1"
+                    "SubsStyle": "Style: Default,{fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1"
                   }
                 }
                 """;
