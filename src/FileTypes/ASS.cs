@@ -1,10 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GICutscenes.FileTypes
 {
     internal class ASS
     {
-        public static readonly string[] SubsExtensions = {".ass", ".srt", ".txt"};
+        public static readonly string[] SubsExtensions = { ".ass", ".srt", ".txt" };
         private readonly string _srt;
         private readonly string _fontname;
         private readonly List<string> _dialogLines;
@@ -67,34 +68,52 @@ namespace GICutscenes.FileTypes
             }
         }
 
-        public string ConvertToAss() {
+        public string ConvertToAss(string outputPath)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("""
+                [Script Info]
+                ; This is an Advanced Sub Station Alpha v4+ script.
+                ScriptType: v4.00+
+                Collisions: Normal
+                ScaledBorderAndShadow: yes
+                PlayDepth: 0
+                
+                [V4+ Styles]
+                Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+                """);
+            if (string.IsNullOrWhiteSpace(Program.settings?.SubtiteStyle))
+            {
+                sb.AppendLine($"Style: Default,{_fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1");
+            }
+            else
+            {
+                sb.AppendLine(Program.settings?.SubtiteStyle.Replace("{fontname}", _fontname));
+            }
+            sb.AppendLine("""
+                
+                [Events]
+                Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
+                """);
 
-            string filename = Path.ChangeExtension(_srt, ".ass");
-            string header =
-                @$"[Script Info]
-; This is an Advanced Sub Station Alpha v4+ script.
-ScriptType: v4.00+
-Collisions: Normal
-ScaledBorderAndShadow: yes
-PlayDepth: 0
+            foreach (var dialogLine in _dialogLines)
+            {
+                if (!string.IsNullOrWhiteSpace(dialogLine))
+                {
+                    string content = dialogLine;
+                    content = Regex.Replace(content, @"<([ubi])>", @"{\${1}1}");
+                    content = Regex.Replace(content, @"</([ubi])>", @"{\${1}0}");
+                    content = Regex.Replace(content, @"<font\s+color=""?#(\w{2})(\w{2})(\w{2})""?>", @"{\c&H$3$2$1&}");
+                    content = Regex.Replace(content, @"</font>", "");
+                    sb.AppendLine(content);
+                }
+            }
 
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,{_fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1
-
-[Events]
-Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text" + Environment.NewLine;
-            File.WriteAllText(filename, header);
-            string content = string.Join(Environment.NewLine, _dialogLines);
-            // Correcting styles
-            content = Regex.Replace(content, @"<([ubi])>", @"{\${1}1}");
-            content = Regex.Replace(content, @"</([ubi])>", @"{\${1}0}");
-            content = Regex.Replace(content, @"<font\s+color=""?#(\w{2})(\w{2})(\w{2})""?>", @"{\c&H$3$2$1&}");
-            content = Regex.Replace(content, @"</font>", "");
-
-            File.AppendAllText(filename, content);
+            var filename = Path.Combine(outputPath, "Subs", Path.GetFileNameWithoutExtension(_srt) + ".ass");
+            Directory.CreateDirectory(Path.Combine(outputPath, "Subs"));
+            File.WriteAllText(filename, sb.ToString());
             Console.WriteLine($"{_srt} converted to ASS");
-            File.Delete(_srt); // Can be commented if you don't want to delete the original
+            //File.Delete(_srt); // Can be commented if you don't want to delete the original
             return filename;
         }
 
@@ -122,30 +141,30 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
             return null;
         }
 
-        public static void ConvertAllSrt(string subsFolder)
-        {
-            string? file = null;
-            //file = "ID/Cs_Inazuma_EQ4002207_ShikishogunRecalling_Boy_ID.txt";
-            if (file == null)
-            {
-                foreach (string langDir in Directory.EnumerateDirectories(subsFolder))
-                {
-                    foreach (string srtFile in Directory.GetFiles(langDir, "*.txt"))
-                    {
-                        ASS newAss = new(srtFile, Path.GetDirectoryName(langDir) ?? "unk");
-                        newAss.ParseSrt();
-                        newAss.ConvertToAss();
-                    }
-                }
-            }
-            else
-            {
-                ASS newAss = new(Path.Combine(subsFolder, file), Path.GetDirectoryName(file) ?? "unk");
-                newAss.ParseSrt();
-                newAss.ConvertToAss();
-            }
+        //public static void ConvertAllSrt(string subsFolder)
+        //{
+        //    string? file = null;
+        //    //file = "ID/Cs_Inazuma_EQ4002207_ShikishogunRecalling_Boy_ID.txt";
+        //    if (file == null)
+        //    {
+        //        foreach (string langDir in Directory.EnumerateDirectories(subsFolder))
+        //        {
+        //            foreach (string srtFile in Directory.GetFiles(langDir, "*.txt"))
+        //            {
+        //                ASS newAss = new(srtFile, Path.GetDirectoryName(langDir) ?? "unk");
+        //                newAss.ParseSrt();
+        //                newAss.ConvertToAss();
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        ASS newAss = new(Path.Combine(subsFolder, file), Path.GetDirectoryName(file) ?? "unk");
+        //        newAss.ParseSrt();
+        //        newAss.ConvertToAss();
+        //    }
 
-            Environment.Exit(0);
-        }
+        //    Environment.Exit(0);
+        //}
     }
 }

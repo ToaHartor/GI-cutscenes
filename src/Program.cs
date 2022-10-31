@@ -18,6 +18,7 @@ namespace GICutscenes
         public string? MkvMergePath { get; set; }
         public string? SubsFolder { get; set; }
         public string? FfmpegPath { get; set; }
+        public string? SubtiteStyle { get; set; }
 
     }
     internal sealed class Program
@@ -182,9 +183,17 @@ namespace GICutscenes
 
             resetCommand.SetHandler(() =>
             {
-                var obj = new { Settings = new Settings { FfmpegPath = "", MkvMergePath = "", SubsFolder = "" } };
-                var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), json);
+                const string str = """
+                {
+                  "Settings": {
+                    "MkvMergePath": "",
+                    "FfmpegPath": "",
+                    "SubsFolder": "",
+                    "SubtiteStyle": "Style: Default,{fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1"
+                  }
+                }
+                """;
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), str);
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("'appsettings.json' has reset to default.");
                 Console.ResetColor();
@@ -249,6 +258,10 @@ namespace GICutscenes
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
             }
+            if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
+            {
+                Directory.Delete(Path.Combine(outputArg, "Subs"), true);
+            }
         }
 
         private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
@@ -265,6 +278,10 @@ namespace GICutscenes
 
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
+            }
+            if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
+            {
+                Directory.Delete(Path.Combine(outputArg, "Subs"), true);
             }
         }
 
@@ -367,7 +384,7 @@ namespace GICutscenes
                                 if (!sub.IsAss())
                                 {
                                     sub.ParseSrt();
-                                    subFile = sub.ConvertToAss();
+                                    subFile = sub.ConvertToAss(outputPath);
                                 }
 
                                 merger.AddSubtitlesTrack(subFile, lang);
