@@ -132,6 +132,22 @@
 					"videos": ["Cs_Sumeru_AQ302009_MOTM"]
 				}
 			]
+		},
+		{
+			"encAudio": true,
+			"version": "3.2",
+			"videoGroups": [
+				{
+					"version": "3022",
+					"key": 1731098136837715,
+					"videos": ["Cs_Sumeru_AQ30221401_DinA", "Cs_Sumeru_AQ30220701_ALC_Boy", "Cs_Sumeru_AQ30220701_ALC_Girl"]
+				},
+				{
+					"version": "3028",
+					"key": 6476534441942898,
+					"videos": ["Cs_Sumeru_AQ_30281101_NBS_Boy", "Cs_Sumeru_AQ_30281101_NBS_Girl", "Cs_Sumeru_AQ_30280901_SKP_Boy", "Cs_Sumeru_AQ_30280901_SKP_Girl", "Cs_Sumeru_AQ_30281901_DM", "Cs_Sumeru_AQ_30280701_MS_Boy", "Cs_Sumeru_AQ_30280701_MS_Girl"]
+				}
+			]
 		}
 	]
 }
