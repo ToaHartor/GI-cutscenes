@@ -98,3 +98,7 @@ public class GithubAsset
     public string BrowserDownloadUrl { get; set; }
 }
 
+
+[JsonSerializable(typeof(GithubAsset), GenerationMode = JsonSourceGenerationMode.Default)]
+[JsonSerializable(typeof(GithubRelease), GenerationMode = JsonSourceGenerationMode.Default)]
+partial class GithubJsonContext : JsonSerializerContext { }

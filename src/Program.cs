@@ -456,7 +456,7 @@ namespace GICutscenes
             Console.WriteLine("Check update for GICutscenes...");
             Console.ResetColor();
             var releaseString = await client.GetStringAsync("https://api.github.com/repos/ToaHartor/GI-cutscenes/releases/latest");
-            var release = JsonSerializer.Deserialize<GithubRelease>(releaseString!);
+            var release = JsonSerializer.Deserialize<GithubRelease>(releaseString!, GithubJsonContext.Default.Options);
             var currentVersion = typeof(Program).Assembly.GetName().Version;
             if (System.Version.TryParse(release?.TagName?[1..], out var latestVersion))
             {
