@@ -45,9 +45,10 @@ namespace GICutscenes
 
         private static (ulong, bool) EncryptionKeyInBLK(string videoFilename)
         {
-            if (!File.Exists("versions.json")) throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
+            var versionsFilePath = Path.Combine(AppContext.BaseDirectory, "versions.json");
+            if (!File.Exists(versionsFilePath)) throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
             videoFilename = Path.GetFileNameWithoutExtension(videoFilename);
-            string jsonString = File.ReadAllText("versions.json");
+            string jsonString = File.ReadAllText(versionsFilePath);
             VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString, VersionJson.Default.VersionList);
             if (versions?.list == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
             Version? v = Array.Find(versions.list, x => (x.videos != null && x.videos.Contains(videoFilename)) || (x.videoGroups != null && Array.Exists(x.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))));
@@ -56,7 +57,7 @@ namespace GICutscenes
             if (v.videoGroups != null)
             {
                 key = Array.Find(v.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))?.key ?? throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
-            } 
+            }
             return (key, v.encAudio ?? false);
         }
 

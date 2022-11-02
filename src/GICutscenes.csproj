@@ -1,46 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <Version>0.4.1</Version>
-	<OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-	  <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
-	<PublishTrimmed>true</PublishTrimmed>
-	<Authors>ToaHartor</Authors>
-    <RootNamespace>GICutscenes</RootNamespace>
-	<Description>A command line program playing with the cutscenes files (USM) from Genshin Impact.</Description>
-	<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
-	<RepositoryUrl>https://github.com/ToaHartor/GI-cutscenes</RepositoryUrl>
+	<PropertyGroup>
+		<Version>0.4.1</Version>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
+		<PublishTrimmed>true</PublishTrimmed>
+		<Authors>ToaHartor</Authors>
+		<RootNamespace>GICutscenes</RootNamespace>
+		<Description>A command line program playing with the cutscenes files (USM) from Genshin Impact.</Description>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/ToaHartor/GI-cutscenes</RepositoryUrl>
 
-	<Nullable>enable</Nullable>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-	<DebugType>embedded</DebugType>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<RepositoryType>git</RepositoryType>
-	<AnalysisLevel>latest-all</AnalysisLevel>
-	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-  </PropertyGroup>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<DebugType>embedded</DebugType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>False</Optimize>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Optimize>False</Optimize>
+		<DebugType>full</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>full</DebugType>
-	<PublishSingleFile>true</PublishSingleFile>
-	<TieredCompilation>true</TieredCompilation>
-	<PublishReadyToRun>true</PublishReadyToRun>
-	<!--<RunAOTCompilation>true</RunAOTCompilation>-->
-  </PropertyGroup>
-	
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0-preview.5.22301.12" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0-preview.5.22301.12" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0-preview.5.22301.12" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugType>full</DebugType>
+		<PublishSingleFile>true</PublishSingleFile>
+		<TieredCompilation>true</TieredCompilation>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<!--<RunAOTCompilation>true</RunAOTCompilation>-->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0-preview.5.22301.12" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0-preview.5.22301.12" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0-preview.5.22301.12" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="../appsettings.json">
@@ -55,10 +56,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="..\.editorconfig" Link=".editorconfig" />
-	  <None Include="..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<None Include="..\.editorconfig" Link=".editorconfig" />
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
 </Project>

@@ -1,9 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.CommandLine;
-using GICutscenes.FileTypes;
+﻿using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
+using GICutscenes.Utils;
+using Microsoft.Extensions.Configuration;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Text.Json;
 
 namespace GICutscenes
 {
@@ -12,24 +18,16 @@ namespace GICutscenes
         public string? MkvMergePath { get; set; }
         public string? SubsFolder { get; set; }
         public string? FfmpegPath { get; set; }
+        public string? SubsStyle { get; set; }
 
     }
     internal sealed class Program
     {
-        public static Settings settings;
+        public static Settings? settings;
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Retrieves the configuration file")]
-        private static Task<int> Main(string[] args)
+        private static int Main(string[] args)
         {
-            
-            // Loading config file
-            // TODO: A LA MANO ?
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables()
-                .Build();
-
-            settings = config.GetRequiredSection(nameof(Settings)).Get<Settings>();
 
             // CLI Options
             var demuxFileOption = new Argument<FileInfo?>(
@@ -46,7 +44,7 @@ namespace GICutscenes
 
             var outputFolderOption = new Option<DirectoryInfo?>(
                 name: "--output",
-                description: "Output folder."
+                description: "Output folder, default is './output'."
                 );
             outputFolderOption.AddAlias("-o");
 
@@ -86,11 +84,34 @@ namespace GICutscenes
             mkvEngineOption.SetDefaultValue("internal");
             mkvEngineOption.AddAlias("-e");
 
+            var audioFormatOption = new Option<string>(
+                name: "--audio-format",
+                description: "Audio encode format in MKV file, the original is PCM.");
+            audioFormatOption.AddAlias("-af");
+
+            var videoFormatOption = new Option<string>(
+                name: "--video-format",
+                description: "Video encode format in MKV file, the original is VP9.");
+            videoFormatOption.AddAlias("-vf");
+
+            var notOpenBrowserOption = new Option<bool>(
+               name: "--no-browser",
+               description: "Do not open browser if there's new version.");
+            notOpenBrowserOption.AddAlias("-nb");
+
+            var proxyOption = new Option<string>(
+              name: "--proxy",
+              description: "Specifies a proxy server for the request.");
+            proxyOption.AddAlias("-p");
+
+            var stackTraceOption = new Option<bool>(
+                name: "--stack-trace",
+                description: "Show stack trace when throw exception.");
+            stackTraceOption.AddAlias("-st");
 
             var rootCommand = new RootCommand("A command line program playing with the cutscenes files (USM) from Genshin Impact.");
-            
-            rootCommand.AddGlobalOption(outputFolderOption);
-            rootCommand.AddGlobalOption(noCleanupOption);
+
+            rootCommand.AddGlobalOption(stackTraceOption);
 
             var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
             {
@@ -99,63 +120,147 @@ namespace GICutscenes
                 key2Option,
                 subsOption,
                 mergeOption,
-                mkvEngineOption
+                mkvEngineOption,
+                audioFormatOption,
+                videoFormatOption,
+                outputFolderOption,
+                noCleanupOption,
             };
 
             var batchDemuxCommand = new Command("batchDemux", "Tries to demux all .usm files in the specified folder")
-            {   
+            {
                 usmFolderArg,
                 subsOption,
                 mergeOption,
-                mkvEngineOption
+                mkvEngineOption,
+                audioFormatOption,
+                videoFormatOption,
+                outputFolderOption,
+                noCleanupOption,
             };
 
             //var hcaDecrypt = new Command();
 
             var convertHcaCommand = new Command("convertHca", "Converts input .hca files into .wav files")
             {
-                hcaInputArg
+                hcaInputArg,
+                outputFolderOption,
             };
+
+            var updateCommand = new Command("update", "Update for usm secret key and GICutscenes.")
+            {
+                notOpenBrowserOption,
+                proxyOption,
+            };
+
+            var resetCommand = new Command("reset", "Reset 'appsettings.json' file to default.");
 
             rootCommand.AddCommand(demuxUsmCommand);
             rootCommand.AddCommand(batchDemuxCommand);
             rootCommand.AddCommand(convertHcaCommand);
+            rootCommand.AddCommand(updateCommand);
+            rootCommand.AddCommand(resetCommand);
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler(async (FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup) => 
-                {
-                    await DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup);
-                }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
-
-
-            batchDemuxCommand.SetHandler(async (DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup) =>
+            demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat) =>
             {
-                var timer = System.Diagnostics.Stopwatch.StartNew();
-                await BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup);
+                ReadSetting();
+                output ??= new DirectoryInfo("./output");
+                output.Create();
+                DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup, audioFormat, videoFormat);
+            }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption);
+
+
+            batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat) =>
+            {
+                ReadSetting();
+                outputDir ??= new DirectoryInfo("./output");
+                outputDir.Create();
+                var timer = Stopwatch.StartNew();
+                BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup, audioFormat, videoFormat);
                 timer.Stop();
                 Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
-            },
-                usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption);
+            }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption);
 
-            convertHcaCommand.SetHandler(async (FileSystemInfo input, DirectoryInfo? output, bool noCleanup) =>
+            convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output) =>
             {
-                await ConvertHcaCommand(input, output /*, noCleanup*/);
-            }, 
-                hcaInputArg, outputFolderOption, noCleanupOption);
+                output ??= new DirectoryInfo("./output");
+                output.Create();
+                ConvertHcaCommand(input, output);
+            }, hcaInputArg, outputFolderOption);
 
-            return Task.FromResult(rootCommand.InvokeAsync(args).Result);
+            updateCommand.SetHandler(async (bool notOpenBrowser, string proxy) =>
+            {
+                await UpdateAsync(notOpenBrowser, proxy);
+            }, notOpenBrowserOption, proxyOption);
+
+            resetCommand.SetHandler(() =>
+            {
+                const string str = """
+                {
+                  "Settings": {
+                    "MkvMergePath": "",
+                    "FfmpegPath": "",
+                    "SubsFolder": "",
+                    "SubsStyle": "Style: Default,{fontname},12,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100.0,100.0,0.0,0.0,1,0,0.5,2,10,10,14,1"
+                  }
+                }
+                """;
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), str);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("'appsettings.json' has reset to default.");
+                Console.ResetColor();
+            });
+
+            return new CommandLineBuilder(rootCommand).UseDefaults().UseExceptionHandler((ex, context) =>
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                if (context.ParseResult.GetValueForOption(stackTraceOption))
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                else
+                {
+                    Console.Error.WriteLine($"{ex.GetType()}: {ex.Message}");
+                }
+                Console.ResetColor();
+            }).Build().Invoke(args);
         }
 
-        private static async Task DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup)
+
+        [RequiresUnreferencedCode("Calls Microsoft.Extensions.Configuration.ConfigurationBinder.Get<T>()")]
+        private static void ReadSetting()
         {
-            if (file == null) throw new ArgumentNullException("No file provided.");
+            if (settings is null)
+            {
+                // Loading config file
+                // TODO: A LA MANO ?
+                IConfiguration config = new ConfigurationBuilder()
+                    .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"))
+                    .AddEnvironmentVariables()
+                    .Build();
+
+                settings = config?.GetSection(nameof(Settings)).Get<Settings>();
+                if (settings is null)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("File 'appsettings.json' has error section, use command 'reset' to reset it to default.");
+                    Console.ResetColor();
+                    Environment.Exit(1);
+                }
+            }
+        }
+
+        private static void DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat)
+        {
+            if (file == null) throw new ArgumentNullException(nameof(file), "No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
             if (!file.Name.EndsWith(".usm"))
                 throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
-            if (key1!=null && key2!= null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
+            if (key1 != null && key2 != null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
             string outputArg = output == null
-                ? file.Directory.FullName
+                ? file.Directory!.FullName
                 : ((output.Exists) ? output.FullName : throw new ArgumentException("Output directory is invalid."));
             Console.WriteLine($"Output folder : {outputArg}");
             byte[] key1Arg = Convert.FromHexString(key1 ?? "");
@@ -163,12 +268,16 @@ namespace GICutscenes
             Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg);
             if (merge)
             {
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs, audioFormat, videoFormat);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
+            }
+            if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
+            {
+                Directory.Delete(Path.Combine(outputArg, "Subs"), true);
             }
         }
 
-        private static async Task BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup)
+        private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat)
         {
             if (inputDir is not { Exists: true }) throw new DirectoryNotFoundException("Input directory is invalid.");
             string outputArg = (outputDir == null)
@@ -180,12 +289,16 @@ namespace GICutscenes
                 Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
                 if (!merge) continue;
 
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs, audioFormat, videoFormat);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
+            }
+            if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
+            {
+                Directory.Delete(Path.Combine(outputArg, "Subs"), true);
             }
         }
 
-        private static async Task ConvertHcaCommand(FileSystemInfo input, DirectoryInfo? output)
+        private static void ConvertHcaCommand(FileSystemInfo input, DirectoryInfo? output)
         {
             if (!input.Exists) throw new ArgumentException("No file or directory given.");
             string outputArg = (output == null)
@@ -213,9 +326,13 @@ namespace GICutscenes
             }
         }
 
-        private static void MergeFiles(string outputPath, string basename, string engine, bool subs)
+        private static void MergeFiles(string outputPath, string basename, string engine, bool subs, string audioFormat, string videoFormat)
         {
             Merger merger;
+            if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
+            {
+                engine = "ffmpeg";
+            }
             switch (engine)
             {
                 case "internal":
@@ -226,21 +343,21 @@ namespace GICutscenes
                 case "mkvmerge":
                     Console.WriteLine("Merging using mkvmerge.");
                     merger = File.Exists(
-                            Path.GetFileNameWithoutExtension(settings.MkvMergePath) == "mkvmerge" ? settings.MkvMergePath : "")
-                        ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings.MkvMergePath) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
+                        Path.GetFileNameWithoutExtension(settings?.MkvMergePath)?.ToLower() == "mkvmerge" ? settings?.MkvMergePath : "")
+                        ? new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"), settings!.MkvMergePath!) : new Mkvmerge(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 case "ffmpeg":
                     Console.WriteLine("Merging using ffmpeg.");
                     merger = File.Exists(
-                        Path.GetFileNameWithoutExtension(settings.FfmpegPath) == "ffmpeg" ? settings.FfmpegPath : "") 
-                        ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings.FfmpegPath) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
+                        Path.GetFileNameWithoutExtension(settings?.FfmpegPath)?.ToLower() == "ffmpeg" ? settings?.FfmpegPath : "")
+                        ? new FFMPEG(Path.Combine(outputPath, basename + ".mkv"), settings!.FfmpegPath!) : new FFMPEG(Path.Combine(outputPath, basename + ".mkv"));
                     merger.AddVideoTrack(Path.Combine(outputPath, basename + ".ivf"));
                     break;
                 default:
                     throw new ArgumentException("Not implemented");
             }
-            
+
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav"))
             {
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(f)[^1..], out int language)) // Extracting language number from filename
@@ -250,7 +367,7 @@ namespace GICutscenes
 
             if (subs)
             {
-                string subsFolder = settings.SubsFolder ?? throw new ArgumentException("Configuration value is not set for the key SubsFolder.");
+                string subsFolder = settings?.SubsFolder ?? throw new ArgumentException("Configuration value is not set for the key SubsFolder.");
                 subsFolder = Path.GetFullPath(subsFolder);
                 if (!Directory.Exists(subsFolder))
                     throw new ArgumentException(
@@ -284,7 +401,7 @@ namespace GICutscenes
                                 if (!sub.IsAss())
                                 {
                                     sub.ParseSrt();
-                                    subFile = sub.ConvertToAss();
+                                    subFile = sub.ConvertToAss(outputPath);
                                 }
 
                                 merger.AddSubtitlesTrack(subFile, lang);
@@ -301,7 +418,14 @@ namespace GICutscenes
                 else Console.WriteLine($"No subtitles found for cutscene {basename}");
             }
             // Merging the file
-            merger.Merge();
+            if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
+            {
+                merger.Merge(audioFormat, videoFormat);
+            }
+            else
+            {
+                merger.Merge();
+            }
         }
 
         private static void CleanFiles(string outputPath, string basename)
@@ -313,5 +437,57 @@ namespace GICutscenes
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.hca")) File.Delete(f);
             foreach (string f in Directory.EnumerateFiles(outputPath, $"{basename}_*.wav")) File.Delete(f);
         }
+
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+        private static async Task UpdateAsync(bool notOpenBroswer, string? proxy)
+        {
+            var webProxy = new WebProxy(proxy);
+            var client = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All, Proxy = webProxy });
+            client.DefaultRequestHeaders.Add("User-Agent", "GICutscenes");
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Update 'versions.json'...");
+            Console.ResetColor();
+            var versionsString = await client.GetStringAsync("https://cdn.jsdelivr.net/gh/ToaHartor/GI-cutscenes@main/versions.json");
+            await File.WriteAllTextAsync(Path.Combine(AppContext.BaseDirectory, "versions.json"), versionsString);
+            Console.WriteLine("'versions.json' has updated to the latest version.");
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Check update for GICutscenes...");
+            Console.ResetColor();
+            var releaseString = await client.GetStringAsync("https://api.github.com/repos/ToaHartor/GI-cutscenes/releases/latest");
+            var release = JsonSerializer.Deserialize<GithubRelease>(releaseString!);
+            var currentVersion = typeof(Program).Assembly.GetName().Version;
+            if (System.Version.TryParse(release?.TagName?[1..], out var latestVersion))
+            {
+                if (latestVersion > currentVersion)
+                {
+
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine($"Latest version is '{release?.TagName}', GICutscenes needs to update.");
+                    Console.WriteLine($"Release page: {release?.HtmlUrl}");
+                    Console.ResetColor();
+                    if (!notOpenBroswer)
+                    {
+                        if (!string.IsNullOrWhiteSpace(release?.HtmlUrl))
+                        {
+                            // What happens on macOS or Linux?
+                            Process.Start(new ProcessStartInfo(release.HtmlUrl) { UseShellExecute = true });
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("GICutscenes is already the latest version.");
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine($"Cannot compare version, current version is '{currentVersion}', latest version is '{release?.TagName}'.");
+                Console.ResetColor();
+            }
+        }
+
     }
 }
