@@ -1,19 +1,18 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace GICutscenes.FileTypes
-{ 
+{
     // Common interface for these types to be able to correctly marshal them (instead of using a dynamic type)
-    internal interface IWavStruct {}
-    internal struct WAVEriff: IWavStruct // size 36
+    internal interface IWavStruct { }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 36)]
+    internal struct WAVEriff : IWavStruct // size 36
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] riff;
+        public uint riff = BitConverter.ToUInt32("RIFF"u8);
         public uint riffSize;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] wave;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] fmt;
-        public uint fmtSize;
+        public uint wave = BitConverter.ToUInt32("WAVE"u8);
+        public uint fmt = BitConverter.ToUInt32("fmt "u8);
+        public uint fmtSize = 0x10;
         public ushort fmtType;
         public ushort fmtChannelCount;
         public uint fmtSamplingRate;
@@ -23,34 +22,24 @@ namespace GICutscenes.FileTypes
 
         public WAVEriff()
         {
-            riff = "RIFF".ToCharArray();
-            riffSize = 0;
-            wave = "WAVE".ToCharArray();
-            fmt = "fmt ".ToCharArray();
-            fmtSize = 0x10;
-            fmtType = 0;
-            fmtChannelCount = 0;
-            fmtSamplingRate = 0;
-            fmtSamplesPerSec = 0;
-            fmtSamplingSize = 0;
-            fmtBitCount = 0;
+
         }
     }
 
-    internal struct WAVEsmpl: IWavStruct // size 68
+    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 68)]
+    internal struct WAVEsmpl : IWavStruct // size 68
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] smpl;
-        public uint smplSize;
+        public uint smpl = BitConverter.ToUInt32("smpl"u8);
+        public uint smplSize = 0x3C;
         public uint manufacturer;
         public uint product;
         public uint samplePeriod;
-        public uint MIDIUnityNote;
+        public uint MIDIUnityNote = 0x3C;
         public uint MIDIPitchFraction;
         public uint SMPTEFormat;
         public uint SMPTEOffset;
-        public uint sampleLoops;
-        public uint samplerData;
+        public uint sampleLoops = 1;
+        public uint samplerData = 0x18;
         public uint loop_Identifier;
         public uint loop_Type;
         public uint loop_Start;
@@ -60,49 +49,32 @@ namespace GICutscenes.FileTypes
 
         public WAVEsmpl()
         {
-            smpl = "smpl".ToCharArray();
-            smplSize = 0x3C;
-            manufacturer = 0;
-            product = 0;
-            samplePeriod = 0;
-            MIDIUnityNote = 0x3C;
-            MIDIPitchFraction = 0;
-            SMPTEFormat = 0;
-            SMPTEOffset = 0;
-            sampleLoops = 1;
-            samplerData = 0x18;
-            loop_Identifier = 0;
-            loop_Type = 0;
-            loop_Start = 0;
-            loop_End = 0;
-            loop_Fraction = 0;
-            loop_PlayCount = 0;
+
         }
     }
-    internal struct WAVEnote: IWavStruct // size 12
+
+    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 12)]
+    internal struct WAVEnote : IWavStruct // size 12
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] note;
+        public uint note = BitConverter.ToUInt32("note"u8);
         public uint noteSize;
         public uint dwName;
 
         public WAVEnote()
         {
-            note = "note".ToCharArray();
-            noteSize = 0;
-            dwName = 0;
+
         }
     }
-    internal struct WAVEdata: IWavStruct // size 8
+
+    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 8)]
+    internal struct WAVEdata : IWavStruct // size 8
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] data;
+        public uint data = BitConverter.ToUInt32("data"u8);
         public uint dataSize;
 
         public WAVEdata()
         {
-            data = "data".ToCharArray();
-            dataSize = 0;
+
         }
     }
 
@@ -112,7 +84,6 @@ namespace GICutscenes.FileTypes
         {
             int size = Marshal.SizeOf(h);
             byte[] arr = new byte[size];
-
             IntPtr ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(h, ptr, false);
             Marshal.Copy(ptr, arr, 0, size);
