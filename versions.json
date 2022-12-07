@@ -97,7 +97,8 @@
 		},
 		{
 			"encAudio": true,
-			"version": "3.1",			"videoGroups": [
+			"version": "3.1",
+			"videoGroups": [
 				{
 					"version": "3017",
 					"key": 6971018813708261,
