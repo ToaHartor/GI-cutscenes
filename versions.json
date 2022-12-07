@@ -97,8 +97,7 @@
 		},
 		{
 			"encAudio": true,
-			"version": "3.1",
-			"videoGroups": [
+			"version": "3.1",			"videoGroups": [
 				{
 					"version": "3017",
 					"key": 6971018813708261,
@@ -146,6 +145,27 @@
 					"version": "3028",
 					"key": 6476534441942898,
 					"videos": ["Cs_Sumeru_AQ_30281101_NBS_Boy", "Cs_Sumeru_AQ_30281101_NBS_Girl", "Cs_Sumeru_AQ_30280901_SKP_Boy", "Cs_Sumeru_AQ_30280901_SKP_Girl", "Cs_Sumeru_AQ_30281901_DM", "Cs_Sumeru_AQ_30280701_MS_Boy", "Cs_Sumeru_AQ_30280701_MS_Girl"]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "3.3",
+			"videoGroups": [
+				{
+					"version": "40090",
+					"key": ,
+					"videos": ["Cs_Inazuma_EQ_4009004_DYG1"]
+				},
+				{
+					"version": "3031",
+					"key": 9022022255533344,
+					"videos": ["Cs_Sumeru_AQ_30310701_HB_Boy","Cs_Sumeru_AQ_30310701_HB_Girl"]
+				},
+				{
+					"version": "40091",
+					"key": ,
+					"videos": ["Cs_Inazuma_EQ_4009114_DYG2"]
 				}
 			]
 		}
