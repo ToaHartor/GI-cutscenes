@@ -11,11 +11,13 @@
             {"ES", ("spa", "Español")},
             {"FR", ("fre", "Français")},
             {"ID", ("ind", "Bahasa Indonesia")},
+            {"IT", ("ita", "Italiano")},
             {"JP", ("jpn", "日本語")},
             {"KR", ("kor", "한국어")},
             {"PT", ("por", "Português")},
             {"RU", ("rus", "Русский")},
             {"TH", ("tha", "ภาษาไทย")},
+            {"TR", ("tur", "Türkçe") },
             {"VI", ("vie", "Tiếng Việt")}
         };
 
@@ -35,11 +37,13 @@
             {"spa", "es"},
             {"fre", "fr"},
             {"ind", "id"},
+            {"ita", "it"},
             {"jpn", "ja"},
             {"kor", "ko"},
             {"por", "pt"},
             {"rus", "ru"},
             {"tha", "th"},
+            {"tur", "tr"},
             {"vie", "vi"},
             {"und", "und"},
             {"chi-CN", "zh"},
