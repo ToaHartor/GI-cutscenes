@@ -1,52 +1,159 @@
 {
-	"list": [{
+	"list": [
+		{
 			"key": 0,
 			"version": "common",
-			"videos": ["Ambor_Readings", "battlePass", "ChangeWeather", "Cs_102106_Summon_Boy", "Cs_102106_Summon_Girl", "Cs_102203_BeforeBattle_Boy", "Cs_102203_BeforeBattle_Girl", "Cs_102205_AfterBattle_Boy", "Cs_102205_AfterBattle_Girl", "Cs_4131904_HaiDaoChuXian_Boy", "Cs_4131904_HaiDaoChuXian_Girl", "Cs_Activity_4141307_Fenghuajie_Boy", "Cs_Activity_4141307_Fenghuajie_Girl", "Cs_EQAST4101101_ASTER_OP", "Cs_EQAST4111412_ASTER_Lenard", "Cs_EQHDJ005_HaiDengJie_Boy", "Cs_EQHDJ005_HaiDengJie_Girl", "Cs_GY11030_GYPersonal", "Cs_LYAQ107_NingGuang", "Cs_LYAQ1112308_LongWangStroy", "Cs_MDAQ018_MDCityShow", "Cs_MDAQ019_DragonInCity_Boy", "Cs_MDAQ019_DragonInCity_Girl", "Cs_MDAQ071_Davalin_Boy", "Cs_MDAQ071_Davalin_Girl", "Cs_WDLQ004_VentiLegends", "Cs_WQDY1800026_Memories", "Cs_XLQ1110104_XiaoPersonal", "MDAQ001_OPNew_Part1", "MDAQ001_OPNew_Part2_PlayerBoy", "MDAQ001_OPNew_Part2_PlayerGirl", "MDAQ041", "Cs_200211_WanYeXianVideo", "MDAQ063_ZhaiXingYaSideB_Boy", "MDAQ063_ZhaiXingYaSideB_Girl"]
-		}, {
+			"videos": [
+				"Ambor_Readings",
+				"battlePass",
+				"ChangeWeather",
+				"Cs_102106_Summon_Boy",
+				"Cs_102106_Summon_Girl",
+				"Cs_102203_BeforeBattle_Boy",
+				"Cs_102203_BeforeBattle_Girl",
+				"Cs_102205_AfterBattle_Boy",
+				"Cs_102205_AfterBattle_Girl",
+				"Cs_4131904_HaiDaoChuXian_Boy",
+				"Cs_4131904_HaiDaoChuXian_Girl",
+				"Cs_Activity_4141307_Fenghuajie_Boy",
+				"Cs_Activity_4141307_Fenghuajie_Girl",
+				"Cs_EQAST4101101_ASTER_OP",
+				"Cs_EQAST4111412_ASTER_Lenard",
+				"Cs_EQHDJ005_HaiDengJie_Boy",
+				"Cs_EQHDJ005_HaiDengJie_Girl",
+				"Cs_GY11030_GYPersonal",
+				"Cs_LYAQ107_NingGuang",
+				"Cs_LYAQ1112308_LongWangStroy",
+				"Cs_MDAQ018_MDCityShow",
+				"Cs_MDAQ019_DragonInCity_Boy",
+				"Cs_MDAQ019_DragonInCity_Girl",
+				"Cs_MDAQ071_Davalin_Boy",
+				"Cs_MDAQ071_Davalin_Girl",
+				"Cs_WDLQ004_VentiLegends",
+				"Cs_WQDY1800026_Memories",
+				"Cs_XLQ1110104_XiaoPersonal",
+				"MDAQ001_OPNew_Part1",
+				"MDAQ001_OPNew_Part2_PlayerBoy",
+				"MDAQ001_OPNew_Part2_PlayerGirl",
+				"MDAQ041",
+				"Cs_200211_WanYeXianVideo",
+				"MDAQ063_ZhaiXingYaSideB_Boy",
+				"MDAQ063_ZhaiXingYaSideB_Girl"
+			]
+		},
+		{
 			"key": 1946182291478952,
 			"version": "2.0",
-			"videos": ["Cs_200803_ShougunBossPart1_Boy", "Cs_200803_ShougunBossPart1_Girl", "Cs_LQ12008_Ayaka_Boy", "Cs_LQ12008_Ayaka_Girl", "Cs_200806_ShougunBossPart2_Boy", "Cs_200806_ShougunBossPart2_Girl", "Cs_201104_DaoQiDengdao_P2_Boy", "Cs_201104_DaoQiDengdao_P2_Girl", "Cs_200919_SHG_Boy", "Cs_200919_SHG_Girl"]
-		}, {
+			"videos": [
+				"Cs_200803_ShougunBossPart1_Boy",
+				"Cs_200803_ShougunBossPart1_Girl",
+				"Cs_LQ12008_Ayaka_Boy",
+				"Cs_LQ12008_Ayaka_Girl",
+				"Cs_200806_ShougunBossPart2_Boy",
+				"Cs_200806_ShougunBossPart2_Girl",
+				"Cs_201104_DaoQiDengdao_P2_Boy",
+				"Cs_201104_DaoQiDengdao_P2_Girl",
+				"Cs_200919_SHG_Boy",
+				"Cs_200919_SHG_Girl"
+			]
+		},
+		{
 			"key": 8578639302762988,
 			"version": "2.1",
-			"videos": ["Cs_Inazuma_AQ202004_StatueDeprivedVision_Boy", "Cs_Inazuma_AQ202004_StatueDeprivedVision_Girl", "Cs_Inazuma_AQ202004_ResistanceCharge_Boy", "Cs_Inazuma_AQ202004_ResistanceCharge_Girl", "Cs_Inazuma_AQ202005_InazumaMucha", "Cs_LiYue_EQ4001515_Lunarite_Boy", "Cs_LiYue_EQ4001515_Lunarite_Girl", "Cs_Inazuma_AQ202006_InazumaEnding"]
-		}, {
+			"videos": [
+				"Cs_Inazuma_AQ202004_StatueDeprivedVision_Boy",
+				"Cs_Inazuma_AQ202004_StatueDeprivedVision_Girl",
+				"Cs_Inazuma_AQ202004_ResistanceCharge_Boy",
+				"Cs_Inazuma_AQ202004_ResistanceCharge_Girl",
+				"Cs_Inazuma_AQ202005_InazumaMucha",
+				"Cs_LiYue_EQ4001515_Lunarite_Boy",
+				"Cs_LiYue_EQ4001515_Lunarite_Girl",
+				"Cs_Inazuma_AQ202006_InazumaEnding"
+			]
+		},
+		{
 			"encAudio": true,
 			"key": 8986874010832568,
 			"version": "2.2",
-			"videos": ["Cs_Inazuma_EQ4002207_ShikishogunRecalling_Boy", "Cs_Inazuma_EQ4002207_ShikishogunRecalling_Girl"]
-		}, {
+			"videos": [
+				"Cs_Inazuma_EQ4002207_ShikishogunRecalling_Boy",
+				"Cs_Inazuma_EQ4002207_ShikishogunRecalling_Girl"
+			]
+		},
+		{
 			"encAudio": true,
 			"key": 4206600976229209,
 			"version": "2.3",
-			"videos": ["Cs_Inazuma_LQ1202615_IttoDungeonCrash_Girl", "Cs_Inazuma_LQ1202615_IttoDungeonCrash_Boy", "Cs_MD_EQ4002802_WinterCampAlbedoConfront", "Cs_Inazuma_LQ1200905_IttoOniStroy01", "Cs_Inazuma_LQ1202618_IttoOniStroy02", "Cs_MD_EQ4002810_WinterCampAlbedoBackstab_Boy", "Cs_MD_EQ4002810_WinterCampAlbedoBackstab_Girl"]
-		}, {
+			"videos": [
+				"Cs_Inazuma_LQ1202615_IttoDungeonCrash_Girl",
+				"Cs_Inazuma_LQ1202615_IttoDungeonCrash_Boy",
+				"Cs_MD_EQ4002802_WinterCampAlbedoConfront",
+				"Cs_Inazuma_LQ1200905_IttoOniStroy01",
+				"Cs_Inazuma_LQ1202618_IttoOniStroy02",
+				"Cs_MD_EQ4002810_WinterCampAlbedoBackstab_Boy",
+				"Cs_MD_EQ4002810_WinterCampAlbedoBackstab_Girl"
+			]
+		},
+		{
 			"encAudio": true,
 			"key": 7630808905721825,
 			"version": "2.4",
-			"videos": ["Cs_LQ1101502_ShenheBattle_Boy", "Cs_LQ1101502_ShenheBattle_Girl", "Cs_LiYue_EQ4003712_HdjFireworksShow_Boy", "Cs_LiYue_EQ4003712_HdjFireworksShow_Girl", "Cs_LQ1101505_YunjinOpera_Boy", "Cs_LQ1101505_YunjinOpera_Girl"]
-		}, {
+			"videos": [
+				"Cs_LQ1101502_ShenheBattle_Boy",
+				"Cs_LQ1101502_ShenheBattle_Girl",
+				"Cs_LiYue_EQ4003712_HdjFireworksShow_Boy",
+				"Cs_LiYue_EQ4003712_HdjFireworksShow_Girl",
+				"Cs_LQ1101505_YunjinOpera_Boy",
+				"Cs_LQ1101505_YunjinOpera_Girl"
+			]
+		},
+		{
 			"encAudio": true,
 			"key": 4614952043623735,
 			"version": "2.5",
-			"videos": ["Cs_Inazuma_EQ4005111_MichiaeMatsuri", "Cs_Inazuma_LQ1204205_IntoTheVoid_Boy", "Cs_Inazuma_LQ1204205_IntoTheVoid_Girl", "Cs_Inazuma_LQ1203105_YaeMiko_Girl", "Cs_Inazuma_LQ1204208_TheSacredTree_Boy", "Cs_Inazuma_LQ1204208_TheSacredTree_Girl", "Cs_Inazuma_LQ1203105_YaeMiko_Boy"]
-		}, {
+			"videos": [
+				"Cs_Inazuma_EQ4005111_MichiaeMatsuri",
+				"Cs_Inazuma_LQ1204205_IntoTheVoid_Boy",
+				"Cs_Inazuma_LQ1204205_IntoTheVoid_Girl",
+				"Cs_Inazuma_LQ1203105_YaeMiko_Girl",
+				"Cs_Inazuma_LQ1204208_TheSacredTree_Boy",
+				"Cs_Inazuma_LQ1204208_TheSacredTree_Girl",
+				"Cs_Inazuma_LQ1203105_YaeMiko_Boy"
+			]
+		},
+		{
 			"encAudio": true,
 			"key": 5578228838233776,
 			"version": "2.6",
-			"videos": ["Cs_ShieldingResources_02", "Cs_LiYue_AQ80070101_StopMechanismBig_Girl", "Cs_LiYue_AQ80070101_StopMechanismBig_Boy", "Cs_Inazuma_EQ400571101_IRODORI", "Cs_Inazuma_EQ400560901_IRODORI_Aoinookina", "Cs_Inazuma_EQ400551201_IRODORI_Suikou"]
-		}, {
+			"videos": [
+				"Cs_LiYue_AQ80070101_StopMechanismBig_Boy",
+				"Cs_LiYue_AQ80070101_StopMechanismBig_Girl",
+				"Cs_Inazuma_EQ400571101_IRODORI",
+				"Cs_Inazuma_EQ400551201_IRODORI_Suikou",
+				"Cs_Inazuma_EQ400560901_IRODORI_Aoinookina",
+				"Cs_ShieldingResources_02"
+			]
+		},
+		{
 			"encAudio": true,
 			"version": "2.7",
-			"videoGroups": [{
+			"videoGroups": [
+				{
 					"key": 3303136414174011,
 					"version": "1031",
-					"videos": ["Cs_LiYue_LQ10310301_BreakThroughSpace_Boy", "Cs_LiYue_LQ10310301_BreakThroughSpace_Girl", "Cs_LiYue_LQ10310601_FusheStory"]
-				}, {
+					"videos": [
+						"Cs_LiYue_LQ10310301_BreakThroughSpace_Boy",
+						"Cs_LiYue_LQ10310301_BreakThroughSpace_Girl",
+						"Cs_LiYue_LQ10310601_FusheStory"
+					]
+				},
+				{
 					"key": 6382832627668464,
 					"version": "11026",
-					"videos": ["Cs_LiYue_LQ110261501_YelanStory_Boy", "Cs_LiYue_LQ110261501_YelanStory_Girl"]
+					"videos": [
+						"Cs_LiYue_LQ110261501_YelanStory_Boy",
+						"Cs_LiYue_LQ110261501_YelanStory_Girl"
+					]
 				}
 			]
 		},
@@ -57,41 +164,60 @@
 				{
 					"key": 5623150388305012,
 					"version": "40067",
-					"videos": ["Cs_MD_EQ400671001_KazuhaMemory"]
+					"videos": [
+						"Cs_MD_EQ400671001_KazuhaMemory"
+					]
 				},
 				{
 					"key": 3865005622692177,
 					"version": "40070",
-					"videos": ["Cs_MD_EQ400701001_XinyanPlay"]
+					"videos": [
+						"Cs_MD_EQ400701001_XinyanPlay"
+					]
 				},
 				{
 					"key": 2376853844266094,
 					"version": "40073",
-					"videos": ["Cs_MD_EQ400731001_FischlFantasy"]
+					"videos": [
+						"Cs_MD_EQ400731001_FischlFantasy"
+					]
 				},
 				{
 					"key": 2320676109514370,
 					"version": "40076",
-					"videos": ["Cs_MD_EQ400761001_MonaDivination"]
+					"videos": [
+						"Cs_MD_EQ400761001_MonaDivination"
+					]
 				},
 				{
 					"key": 2850973778349534,
 					"version": "40065",
-					"videos": ["Cs_MD_EQ400650301_IslandFlash_Boy", "Cs_MD_EQ400650301_IslandFlash_Girl"]
+					"videos": [
+						"Cs_MD_EQ400650301_IslandFlash_Boy",
+						"Cs_MD_EQ400650301_IslandFlash_Girl"
+					]
 				}
 			]
-		}, 
+		},
 		{
 			"encAudio": true,
 			"version": "3.0",
-			"videoGroups": [{
+			"videoGroups": [
+				{
 					"key": 5515318060794455,
 					"version": "3006",
-					"videos": ["Cs_Sumeru_AQ30061401_ALPlay_Boy", "Cs_Sumeru_AQ30061401_ALPlay_Girl"]
-				}, {
+					"videos": [
+						"Cs_Sumeru_AQ30061401_ALPlay_Boy",
+						"Cs_Sumeru_AQ30061401_ALPlay_Girl"
+					]
+				},
+				{
 					"key": 2690561074476991,
 					"version": "3012",
-					"videos": ["Cs_Sumeru_AQ30130101_DofFG_Boy", "Cs_Sumeru_AQ30130101_DofFG_Girl"]
+					"videos": [
+						"Cs_Sumeru_AQ30130101_DofFG_Boy",
+						"Cs_Sumeru_AQ30130101_DofFG_Girl"
+					]
 				}
 			]
 		},
@@ -100,36 +226,53 @@
 			"version": "3.1",
 			"videoGroups": [
 				{
-					"version": "3017",
 					"key": 6971018813708261,
-					"videos": ["Cs_Sumeru_AQ30170602_GF_Boy", "Cs_Sumeru_AQ30170602_GF_Girl", "Cs_Sumeru_AQ30170601_SOfS"]
+					"version": "3017",
+					"videos": [
+						"Cs_Sumeru_AQ30170602_GF_Boy",
+						"Cs_Sumeru_AQ30170602_GF_Girl",
+						"Cs_Sumeru_AQ30170601_SOfS"
+					]
 				},
 				{
-					"version": "13011",
 					"key": 7063052926021205,
-					"videos": ["Cs_Sumeru_LQ130111201_EnODeGa_Boy", "Cs_Sumeru_LQ130111201_EnODeGa_Girl"
+					"version": "13011",
+					"videos": [
+						"Cs_Sumeru_LQ130111201_EnODeGa_Boy",
+						"Cs_Sumeru_LQ130111201_EnODeGa_Girl"
 					]
 				},
 				{
-					"version": "3016",
 					"key": 8823377679488754,
-					"videos": ["Cs_Sumeru_AQ30161501_DT_Boy", "Cs_Sumeru_AQ30161501_DT_Girl"
+					"version": "3016",
+					"videos": [
+						"Cs_Sumeru_AQ30161501_DT_Boy",
+						"Cs_Sumeru_AQ30161501_DT_Girl"
 					]
 				},
 				{
-					"version": "3021",
 					"key": 7828263898924570,
-					"videos": ["Cs_Sumeru_AQ302103_FOTD_Boy", "Cs_Sumeru_AQ302103_FOTD_Girl", "Cs_Sumeru_AQ302105_GOTP"]
+					"version": "3021",
+					"videos": [
+						"Cs_Sumeru_AQ302103_FOTD_Boy",
+						"Cs_Sumeru_AQ302103_FOTD_Girl",
+						"Cs_Sumeru_AQ302105_GOTP"
+					]
 				},
 				{
-					"version": "40080",
 					"key": 3752791881230737,
-					"videos": ["Cs_MD_EQ400800601_VinFes_Boy", "Cs_MD_EQ400800601_VinFes_Girl"]
+					"version": "40080",
+					"videos": [
+						"Cs_MD_EQ400800601_VinFes_Boy",
+						"Cs_MD_EQ400800601_VinFes_Girl"
+					]
 				},
 				{
-					"version": "3020",
 					"key": 3668457735028873,
-					"videos": ["Cs_Sumeru_AQ302009_MOTM"]
+					"version": "3020",
+					"videos": [
+						"Cs_Sumeru_AQ302009_MOTM"
+					]
 				}
 			]
 		},
@@ -138,14 +281,26 @@
 			"version": "3.2",
 			"videoGroups": [
 				{
-					"version": "3022",
 					"key": 1731098136837715,
-					"videos": ["Cs_Sumeru_AQ30221401_DinA", "Cs_Sumeru_AQ30220701_ALC_Boy", "Cs_Sumeru_AQ30220701_ALC_Girl"]
+					"version": "3022",
+					"videos": [
+						"Cs_Sumeru_AQ30221401_DinA",
+						"Cs_Sumeru_AQ30220701_ALC_Boy",
+						"Cs_Sumeru_AQ30220701_ALC_Girl"
+					]
 				},
 				{
-					"version": "3028",
 					"key": 6476534441942898,
-					"videos": ["Cs_Sumeru_AQ_30281101_NBS_Boy", "Cs_Sumeru_AQ_30281101_NBS_Girl", "Cs_Sumeru_AQ_30280901_SKP_Boy", "Cs_Sumeru_AQ_30280901_SKP_Girl", "Cs_Sumeru_AQ_30281901_DM", "Cs_Sumeru_AQ_30280701_MS_Boy", "Cs_Sumeru_AQ_30280701_MS_Girl"]
+					"version": "3028",
+					"videos": [
+						"Cs_Sumeru_AQ_30281101_NBS_Boy",
+						"Cs_Sumeru_AQ_30281101_NBS_Girl",
+						"Cs_Sumeru_AQ_30280901_SKP_Boy",
+						"Cs_Sumeru_AQ_30280901_SKP_Girl",
+						"Cs_Sumeru_AQ_30281901_DM",
+						"Cs_Sumeru_AQ_30280701_MS_Boy",
+						"Cs_Sumeru_AQ_30280701_MS_Girl"
+					]
 				}
 			]
 		},
@@ -154,19 +309,49 @@
 			"version": "3.3",
 			"videoGroups": [
 				{
-					"version": "40090",
 					"key": 4619433776189609,
-					"videos": ["Cs_Inazuma_EQ_4009004_DYG1"]
+					"version": "40090",
+					"videos": [
+						"Cs_Inazuma_EQ_4009004_DYG1"
+					]
 				},
 				{
-					"version": "3031",
 					"key": 9022022255533344,
-					"videos": ["Cs_Sumeru_AQ_30310701_HB_Boy","Cs_Sumeru_AQ_30310701_HB_Girl"]
+					"version": "3031",
+					"videos": [
+						"Cs_Sumeru_AQ_30310701_HB_Boy",
+						"Cs_Sumeru_AQ_30310701_HB_Girl"
+					]
 				},
 				{
-					"version": "40091",
 					"key": 1887105619472354,
-					"videos": ["Cs_Inazuma_EQ_4009114_DYG2"]
+					"version": "40091",
+					"videos": [
+						"Cs_Inazuma_EQ_4009114_DYG2"
+					]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "3.4",
+			"videoGroups": [
+				{
+					"key": 0,
+					"version": "40093",
+					"videos": [
+						"Cs_Liyue_EQ4009306_HDJ1",
+						"Cs_Liyue_EQ4009311_HDJ2_Boy",
+						"Cs_Liyue_EQ4009311_HDJ2_Girl"
+					]
+				},
+				{
+					"key": 3392155838449487,
+					"version": "13022",
+					"videos": [
+						"Cs_Sumeru_LQ130221401_NF_Boy",
+						"Cs_Sumeru_LQ130221401_NF_Girl"
+					]
 				}
 			]
 		}
