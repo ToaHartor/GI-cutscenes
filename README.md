@@ -89,7 +89,7 @@ Several options are available for most of the commands :
 `--output` allows to choose the output folder
 `--merge` adds a merging step, putting the video, the audio (and the subtitles if the `--subs` option is also there) into a single MKV file
 `--no-cleanup` disables the suppression of the extracted files after merging
-`--engine` specifies the merging program used (either `internal`, ``mkvmerge` or ``ffmpeg`, using the internal method by default)
+`--mkv-engine` specifies the merging program used (either `internal`, ``mkvmerge` or ``ffmpeg`, using the internal method by default)
 
 ### Examples
 - `GICutscenes -h` displays the help menu
