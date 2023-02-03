@@ -25,13 +25,13 @@ As a first C# program, I thought it would be a good idea to rewrite it. I haven'
 - [x] Extract video and audio (and video decryption)
 - [x] Audio (hca) decryption
 - [x] HCA conversion to WAV (a more commonly readable format)
-- [x] Subtitles from [Dim's repository](https://github.com/Dimbreath/GenshinData/tree/master/Subtitle), reformatted from `.srt` to `.ass` and font included in the default style
+- [x] Subtitles support from the gamedata, reformatted from `.srt` to `.ass` and font included in the default style (repositories available in Issues)
 - [x] MKV merging with video, audio, subtitles and fonts without any additional software (but also supports the use of mkvmerge and FFMPEG)
 - [x] Multithreaded audio decoding
 
 ## Build
 
-This program uses the .NET framework version 6.0, so you will need the .NET SDK.
+This program uses the .NET framework version 7.0, so you will need the .NET SDK.
 You can open this project in Visual Studio 2022 and build the solution, or use the dotnet CLI : `dotnet publish -c Release -r [platform]`.
 Otherwise, you can also modify the script `build-all.sh` with the desired runtimes.
 
@@ -59,13 +59,14 @@ However, if you wish to use other merging solutions than the one integrated, you
 - "MkvMergePath" : The path where mkvmerge is installed. Leave it empty if you installed mkvtoolnix (the package/program providing mkvmerge) in the default path. However, change it to the path of the mkvmerge file in case you're using a different installation path or you're using the portable MKVToolNix version.
 - "FfmpegPath" : The path to the ffmpeg binary. Leave it empty if the binary is in the PATH of your operating system.
 - "SubsFolder" : The path of the folder containing the subtitles of the video divided into language folders. Default is "./GenshinData/Subtitle", the right folder if you copy [this repository](https://github.com/Dimbreath/GenshinData) in the same folder than the tool. You can follow the next section to clone the repository with the right path.
+- "SubsStyle" : The style of the subtitles, according to the SubStation Alpha file format. If you need to modify the size, color or position, you can modify the parameters of it.
 
 #### Clone the subtitles repository
 
 Execute the following lines in the directory where the tool is :
 
 ```
-git clone --depth 1 --filter=blob:none --sparse https://github.com/Dimbreath/GenshinData.git
+git clone --depth 1 --filter=blob:none --sparse [repository URL]
 cd GenshinData
 git sparse-checkout set Subtitle
 ```
@@ -80,16 +81,24 @@ You can then copy these two TTF files without renaming them in the tool's direct
 
 ### 3. Commands
 
-There are 3 different commands available :
+There are 3 different commands available to be used on the files :
 - `demuxUsm` to demux a specific USM file, extracting audio and video and convert extracted HCA files into WAV
 - `batchDemux` to demux all USM files into a specific folder
 - `convertHca` to convert a HCA file into WAV
 
 Several options are available for most of the commands :
-`--output` allows to choose the output folder
-`--merge` adds a merging step, putting the video, the audio (and the subtitles if the `--subs` option is also there) into a single MKV file
-`--no-cleanup` disables the suppression of the extracted files after merging
-`--mkv-engine` specifies the merging program used (either `internal`, `mkvmerge` or `ffmpeg`, using the internal method by default)
+- `--output` allows to choose the output folder
+- `--merge` adds a merging step, putting the video, the audio (and the subtitles if the `--subs` option is also there) into a single MKV file. Subtitles will be automatically converted to the SSA format and stored in the `Subs` folder in the output directory if the `--no-cleanup` option is entered.
+- `--no-cleanup` disables the suppression of the extracted files after merging
+- `--mkv-engine` specifies the merging program used (either `internal`, `mkvmerge` or `ffmpeg`, using the internal method by default)
+- `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is changed to FFMPEG**.
+
+Maintenance commands and options:
+- `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows :
+	- `--no-browser` to not automatically open the browser if a new version is available
+	- `--proxy <uri>` to specify a web proxy for the requests
+- `reset` resets the configuration file (`appsettings.json`) to its default state
+- `--stack-trace` enable the stack trace print of errors in the terminal
 
 ### Examples
 - `GICutscenes -h` displays the help menu
