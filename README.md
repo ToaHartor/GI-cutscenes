@@ -6,7 +6,7 @@ Able to extract the USM files, decrypt the tracks and convert them into readable
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game.
 Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this program's fault).
 
-#### Cutscenes from version 1.0 to 3.5 can be decrypted.
+#### Cutscenes from version 1.0 to 3.6 can be decrypted.
 *Also includes CBT3, which has the same files than the live version*
 
 If you want to extract newer cutscenes but the `versions.json` in the released zip is outdated, simply download the updated file in the project tree ([here](https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json)) and replace the file.
@@ -31,7 +31,7 @@ As a first C# program, I thought it would be a good idea to rewrite it. I haven'
 
 ## Build
 
-This program uses the .NET framework version 7.0, so you will need the .NET SDK.
+This program uses the .NET framework version 6.0, so you will need the .NET SDK.
 You can open this project in Visual Studio 2022 and build the solution, or use the dotnet CLI : `dotnet publish -c Release -r [platform]`.
 Otherwise, you can also modify the script `build-all.sh` with the desired runtimes.
 
