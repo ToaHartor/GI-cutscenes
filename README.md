@@ -92,7 +92,7 @@ Several options are available for most of the commands :
 - `--no-cleanup` disables the suppression of the extracted files after merging
 - `--mkv-engine` specifies the merging program used (either `internal`, `mkvmerge` or `ffmpeg`, using the internal method by default)
 - `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is changed to FFMPEG**.
-- `--audio-lang` allow to specify audio track language in the output, allowed values are `[chi,eng,jap,kor]`
+- `--audio-lang` allow to specify audio track language in the output, allowed values are `[chi,eng,jpn,kor]`
 
 Maintenance commands and options:
 - `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows :

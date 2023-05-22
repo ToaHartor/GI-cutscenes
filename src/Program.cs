@@ -70,9 +70,9 @@ namespace GICutscenes
 
             var audioLangOption = new Option<string>(
                 name: "--audio-lang",
-                description: $"Select audio languages that you wish to include in MKV file.{Environment.NewLine}Example \"eng,jap\")");
+                description: $"Select audio languages that you wish to include in MKV file.{Environment.NewLine}Example \"eng,jpn\")");
             audioLangOption.AddAlias("-al");
-            audioLangOption.SetDefaultValue("chi,eng,jap,kor");
+            audioLangOption.SetDefaultValue("chi,eng,jpn,kor");
 
             var mergeOption = new Option<bool>(
                 name: "--merge",
