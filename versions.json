@@ -425,6 +425,20 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "3.8",
+            "videoGroups": [
+                {
+                    "key": 0,
+                    "version": "40119",
+                    "videos": [
+                        "Cs_Sumeru_EQ4011905_LTWT_Boy",
+                        "Cs_Sumeru_EQ4011905_LTWT_Girl"
+                    ]
+                }
+            ]
         }
     ]
 }
