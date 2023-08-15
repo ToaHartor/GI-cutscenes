@@ -439,6 +439,45 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "4.0",
+            "videoGroups": [
+                {
+                    "key": 0,
+                    "version": "4002",
+                    "videos": [
+                        "Cs_Fontaine_AQ400303_NXT_Girl",
+                        "Cs_Fontaine_AQ400303_NXT_Boy"
+                    ]
+                },
+                {
+                    "key": 0,
+                    "version": "4000",
+                    "videos": [
+                        "Cs_Fontaine_AQ400004_CB_Boy",
+                        "Cs_Fontaine_AQ400004_CB_Girl"
+                    ]
+                },
+                {
+                    "key": 0,
+                    "version": "4005",
+                    "videos": [
+                        "Cs_Fontaine_AQ40051001_MGS1_Boy",
+                        "Cs_Fontaine_AQ40051001_MGS1_Girl",
+                        "Cs_Fontaine_AQ40051002_MGS2_Girl",
+                        "Cs_Fontaine_AQ40051002_MGS2_Boy"
+                    ]
+                },
+                {
+                    "key": 0,
+                    "version": "14002",
+                    "videos": [
+                        "Cs_Fontaine_LQ140020501_GKTS"
+                    ]
+                }
+            ]
         }
     ]
 }
