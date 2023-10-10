@@ -129,8 +129,9 @@ namespace GICutscenes.FileTypes
                 Match m = Regex.Match(f.Name, @"(.*?)_[0-3]\.hca");  // Matching a base name that could correspond to a USM file from versions.json
                 if (!m.Success) throw new ArgumentException($"Unable to find key for the file {f.Name}, as it has to follow a specific naming convention when automatically demuxed...");
                 var splitKeys = Demuxer.KeySplitter(Demuxer.EncryptionKey(m.Groups[1].Captures[0] + ".usm"));
-                key1 = splitKeys.Item1;
-                key2 = splitKeys.Item2;
+                if (splitKeys == null) throw new ArgumentNullException("Unable to find the second key in versions.json for " + filename);
+                key1 = splitKeys.Value.Item1;
+                key2 = splitKeys.Value.Item2;
             }
             _key1 = key1;
             _key2 = key2;
@@ -533,18 +534,18 @@ namespace GICutscenes.FileTypes
             int magic = d.GetBit(16);//0xFFFF固定
             if (magic != 0xFFFF) return;
             int a = (d.GetBit(9) << 8) - d.GetBit(7);
-                for (uint i = 0; i < _hcaHeader.channelCount; i++) _hcaChannel[i].Decode1(ref d, _hcaHeader.comp_r09, a, _athTable);
-                for (int i = 0; i < 8; i++)
-                {
-                    for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode2(ref d);
-                    for (uint j = 0; j < _hcaHeader.channelCount; j++)
-                        _hcaChannel[j].Decode3(_hcaHeader.comp_r09, _hcaHeader.comp_r08,
-                            _hcaHeader.comp_r07 + _hcaHeader.comp_r06, _hcaHeader.comp_r05);
-                    for (uint j = 0; j < _hcaHeader.channelCount - 1; j++)
-                        _hcaChannel[j].Decode4(i, _hcaHeader.comp_r05 - _hcaHeader.comp_r06, _hcaHeader.comp_r06,
-                            _hcaHeader.comp_r07, _hcaChannel[1]);
-                    for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode5(i);
-                }
+            for (uint i = 0; i < _hcaHeader.channelCount; i++) _hcaChannel[i].Decode1(ref d, _hcaHeader.comp_r09, a, _athTable);
+            for (int i = 0; i < 8; i++)
+            {
+                for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode2(ref d);
+                for (uint j = 0; j < _hcaHeader.channelCount; j++)
+                    _hcaChannel[j].Decode3(_hcaHeader.comp_r09, _hcaHeader.comp_r08,
+                        _hcaHeader.comp_r07 + _hcaHeader.comp_r06, _hcaHeader.comp_r05);
+                for (uint j = 0; j < _hcaHeader.channelCount - 1; j++)
+                    _hcaChannel[j].Decode4(i, _hcaHeader.comp_r05 - _hcaHeader.comp_r06, _hcaHeader.comp_r06,
+                        _hcaHeader.comp_r07, _hcaChannel[1]);
+                for (uint j = 0; j < _hcaHeader.channelCount; j++) _hcaChannel[j].Decode5(i);
+            }
         }
 
         private void ATHInit()
