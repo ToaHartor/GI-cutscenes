@@ -92,6 +92,7 @@ Several options are available for most of the commands :
 - `--no-cleanup` disables the suppression of the extracted files after merging
 - `--mkv-engine` specifies the merging program used (either `internal`, `mkvmerge` or `ffmpeg`, using the internal method by default)
 - `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is changed to FFMPEG**.
+- `--audio-lang` allow to specify audio track language in the output, allowed values are `[chi,eng,jpn,kor]`
 
 Maintenance commands and options:
 - `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows :
@@ -106,5 +107,6 @@ Maintenance commands and options:
 - `GICutscenes batchDemux cutscenes/ -o ./output -m -s -e ffmpeg` will extract every USM file into the output directory, merging the files (`-m`) and the subs (`-s`) using FFMPEG (`-e`).
 - `GICutscenes demuxUsm hello.usm -b 00112233 -a 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677` and extracts the tracks.
 - `GICutscenes convertHca hello_0.hca` decodes the file and converts it into a WAV file
+- `GICutscenes demuxUsm "[Path to .usm file]" --merge --subs --audio-lang "jpn,eng"` convert single USM file, include subtitles, include only JPN and ENG audio tracks
 
 The video is extracted as an IVF file (which makes codec detection (VP9) easier for mkvmerge). In order to watch it, you can open it into VLC or change the extension to `.m2v`.
