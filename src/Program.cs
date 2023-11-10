@@ -373,8 +373,7 @@ namespace GICutscenes
                     throw new FormatException($"Unable to parse the language code from the file {Path.GetFileName(f)}.");
 
                 string[] langs = audioLang.Split(',');
-                var langDict = new Dictionary<int, string> { { 0, "chi" }, { 1, "eng" }, { 2, "jpn" }, { 3, "kor" } };
-                if (language > 3 || !langs.Contains(langDict[language]))
+                if (language > 3 || !langs.Contains(MKV.AudioLang[language].Item2))
                     continue;
 
                 merger.AddAudioTrack(f, language);
