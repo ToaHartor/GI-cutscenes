@@ -523,6 +523,40 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "4.2",
+            "videoGroups": [
+                {
+                    "key": 1353017463628146,
+                    "version": "4024",
+                    "videos": [
+                        "Cs_Fontaine_AQ40241801_FSAVE",
+                        "Cs_Fontaine_AQ40241601_SCBW_Girl",
+                        "Cs_Fontaine_AQ40241601_SCBW_Boy",
+                        "Cs_Fontaine_AQ40241201_FBH_Boy",
+                        "Cs_Fontaine_AQ40241201_FBH_Girl"
+                    ]
+                },
+                {
+                    "key": 1296761372231568,
+                    "version": "4022",
+                    "videos": [
+                        "Cs_Fontaine_AQ40221001_WCO_Boy",
+                        "Cs_Fontaine_AQ40221001_WCO_Girl",
+                        "Cs_Fontaine_AQ40220801_JMC_Boy",
+                        "Cs_Fontaine_AQ40220801_JMC_Girl"
+                    ]
+                },
+                {
+                    "key": 3442018833959466,
+                    "version": "14012",
+                    "videos": [
+                        "Cs_Fontaine_LD140120801_OOF"
+                    ]
+                }
+            ]
         }
     ]
 }
