@@ -478,6 +478,51 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "4.1",
+            "videoGroups": [
+                {
+                    "key": 9637784902652011,
+                    "version": "14006",
+                    "videos": [
+                        "Cs_Fontaine_LQ140061601_SUDO_Boy",
+                        "Cs_Fontaine_LQ140061601_SUDO_Girl"
+                    ]
+                },
+                {
+                    "key": 9183447191069533,
+                    "version": "4019",
+                    "videos": [
+                        "Cs_Fontaine_AQ40190601_DALW"
+                    ]
+                },
+                {
+                    "key": 1298862364052129,
+                    "version": "40126",
+                    "videos": [
+                        "Cs_Mengde_EQ401260901_AA"
+                    ]
+                },
+                {
+                    "key": 8170343248395864,
+                    "version": "4010",
+                    "videos": [
+                        "Cs_Fontaine_AQ40100301_FSSDB_Boy",
+                        "Cs_Fontaine_AQ40100301_FSSDB_Girl",
+                        "Cs_Fontaine_AQ40100801_FSSR"
+                    ]
+                },
+                {
+                    "key": 6227517550733944,
+                    "version": "14009",
+                    "videos": [
+                        "Cs_Fontaine_LQ140091201_SLRC_Boy",
+                        "Cs_Fontaine_LQ140091201_SLRC_Girl"
+                    ]
+                }
+            ]
         }
     ]
 }
