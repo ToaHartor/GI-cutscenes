@@ -286,7 +286,8 @@ namespace GICutscenes
             Console.WriteLine($"Output folder : {outputArg}");
             foreach (string f in Directory.EnumerateFiles(inputDir.FullName, "*.usm"))
             {
-                Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
+                bool demuxed = Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
+                if (!demuxed) continue;
                 if (!merge) continue;
 
                 MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs, audioFormat, videoFormat);

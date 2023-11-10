@@ -43,7 +43,7 @@ namespace GICutscenes
             return result;
         }
 
-        private static (ulong, bool) EncryptionKeyInBLK(string videoFilename)
+        private static (ulong, bool)? EncryptionKeyInBLK(string videoFilename)
         {
             var versionsFilePath = Path.Combine(AppContext.BaseDirectory, "versions.json");
             if (!File.Exists(versionsFilePath)) throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
@@ -52,7 +52,13 @@ namespace GICutscenes
             VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString, VersionJson.Default.VersionList);
             if (versions?.list == null) throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
             Version? v = Array.Find(versions.list, x => (x.videos != null && x.videos.Contains(videoFilename)) || (x.videoGroups != null && Array.Exists(x.videoGroups, y => y.videos != null && y.videos.Contains(videoFilename))));
-            if (v == null) throw new KeyNotFoundException("Unable to find the second key in versions.json for " + videoFilename);
+            if (v == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Unable to find the second key in versions.json for " + videoFilename);
+                Console.ResetColor();
+                return null;
+            }
             ulong key = v.key ?? 0;
             if (v.videoGroups != null)
             {
@@ -61,28 +67,30 @@ namespace GICutscenes
             return (key, v.encAudio ?? false);
         }
 
-        public static ulong EncryptionKey(string videoFilename)
+        public static ulong? EncryptionKey(string videoFilename)
         {
             ulong key1 = EncryptionKeyInFilename(videoFilename);
-            (ulong, bool) blk = EncryptionKeyInBLK(videoFilename);
-            ulong key2 = blk.Item1;
-            //audioEnc = blk.Item2;
+            (ulong, bool)? blk = EncryptionKeyInBLK(videoFilename);
+            if (blk == null) return null;
+            ulong key2 = blk.Value.Item1;
+            //audioEnc = blk.Value.Item2;
 
             ulong finalKey = 0x100000000000000;
             if ((key1 + key2 & 0xFFFFFFFFFFFFFF) != 0) finalKey = key1 + key2 & 0xFFFFFFFFFFFFFF;
             return finalKey;
         }
 
-        public static (byte[], byte[]) KeySplitter(ulong key)
+        public static (byte[], byte[])? KeySplitter(ulong? key)
         {
+            if (key == null) return null;
             byte[] keyArray = new byte[8];
-            BitConverter.GetBytes(key).CopyTo(keyArray, 0);
+            BitConverter.GetBytes(key.Value).CopyTo(keyArray, 0);
             byte[] key1 = keyArray[..4];
             byte[] key2 = keyArray[4..];
             return (key1, key2);
         }
 
-        public static void Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output)
+        public static bool Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output)
         {
             if (!File.Exists(filenameArg)) throw new FileNotFoundException($"File {filenameArg} doesn't exist...");
             string filename = Path.GetFileName(filenameArg);
@@ -90,10 +98,12 @@ namespace GICutscenes
             if (key1Arg.Length == 0 && key2Arg.Length == 0)
             {
                 Console.WriteLine($"Finding encryption key for {filename}...");
-                (byte[], byte[]) split = KeySplitter(EncryptionKey(filename));
-                key1 = split.Item1;
-                key2 = split.Item2;
-            } else
+                (byte[], byte[])? split = KeySplitter(EncryptionKey(filename));
+                if (split == null) return false;
+                key1 = split.Value.Item1;
+                key2 = split.Value.Item2;
+            }
+            else
             {
                 key1 = key1Arg;
                 key2 = key2Arg;
@@ -116,6 +126,7 @@ namespace GICutscenes
             }
             Task.WaitAll(decodingTasks);
             Console.WriteLine("Extraction completed !");
+            return true;
         }
     }
 }
