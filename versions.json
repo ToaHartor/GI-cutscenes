@@ -557,6 +557,28 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "4.3",
+            "videoGroups": [
+                {
+                    "key": 7643466225116397,
+                    "version": "40135",
+                    "videos": [
+                        "Cs_Fontaine_EQ401351001_FFTM_Boy",
+                        "Cs_Fontaine_EQ401351001_FFTM_Girl"
+                    ]
+                },
+                {
+                    "key": 7734065023182190,
+                    "version": "14017",
+                    "videos": [
+                        "Cs_Fontaine_LQ140170701_NHL_Boy",
+                        "Cs_Fontaine_LQ140170701_NHL_Girl"
+                    ]
+                }
+            ]
         }
     ]
 }
