@@ -579,6 +579,28 @@
                     ]
                 }
             ]
+        },
+        {
+            "encAudio": true,
+            "version": "4.4",
+            "videoGroups": [
+                {
+                    "key": 0,
+                    "version": "11035",
+                    "videos": [
+                        "Cs_Liyue_LQ110350701_AA_Girl",
+                        "Cs_Liyue_LQ110350701_AA_Boy"
+                    ]
+                },
+                {
+                    "key": 0,
+                    "version": "40141",
+                    "videos": [
+                        "Cs_Liyue_EQ401411301_GMWS_Boy",
+                        "Cs_Liyue_EQ401411301_GMWS_Girl"
+                    ]
+                }
+            ]
         }
     ]
 }
