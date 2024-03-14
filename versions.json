@@ -284,5 +284,13 @@
                     "version": "40141",
                     "videos": ["Cs_Liyue_EQ401411301_GMWS_Boy", "Cs_Liyue_EQ401411301_GMWS_Girl"]
                 }]
+        }, {
+            "encAudio": true,
+            "version": "4.5",
+            "videoGroups": [{
+                    "key": 9158640187902629,
+                    "version": "14022",
+                    "videos": ["Cs_Fontaine_LQ140220701_FFF_Boy", "Cs_Fontaine_LQ140220701_FFF_Girl"]
+                }]
         }]
 }
