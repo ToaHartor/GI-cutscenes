@@ -58,7 +58,7 @@ However, if you wish to use other merging solutions than the one integrated, you
 `appsettings.json` contains a configuration sample with the following keys :
 - "MkvMergePath" : The path where mkvmerge is installed. Leave it empty if you installed mkvtoolnix (the package/program providing mkvmerge) in the default path. However, change it to the path of the mkvmerge file in case you're using a different installation path or you're using the portable MKVToolNix version.
 - "FfmpegPath" : The path to the ffmpeg binary. Leave it empty if the binary is in the PATH of your operating system.
-- "SubsFolder" : The path of the folder containing the subtitles of the video divided into language folders. Default is "./GenshinData/Subtitle", the right folder if you copy [this repository](https://github.com/Dimbreath/GenshinData) in the same folder than the tool. You can follow the next section to clone the repository with the right path.
+- "SubsFolder" : The path of the folder containing the subtitles of the video divided into language folders. Default is "./GenshinData/Subtitle", the right folder if you copy [this repository](https://gitlab.com/Dimbreath/AnimeGameData) in the same folder than the tool. You can follow the next section to clone the repository with the right path.
 - "SubsStyle" : The style of the subtitles, according to the SubStation Alpha file format. If you need to modify the size, color or position, you can modify the parameters of it.
 
 #### Clone the subtitles repository
