@@ -304,5 +304,21 @@
                     "version": "14026",
                     "videos": ["Cs_Fontaine_LQ140260501_BF_Boy", "Cs_Fontaine_LQ140260501_BF_Girl"]
                 }]
+        }, {
+            "encAudio": true,
+            "version": "4.7",
+            "videoGroups": [{
+                    "key": 9824816325372856,
+                    "version": "14034",
+                    "videos": ["Cs_Fontaine_LQ140340201_FN_Boy", "Cs_Fontaine_LQ140340201_FN_Girl"]
+                }, {
+                    "key": 0,
+                    "version": "14027",
+                    "videos": ["Cs_Fontaine_LQ1402701_SSS"]
+                }, {
+                    "key": 0,
+                    "version": "14030",
+                    "videos": ["Cs_Fontaine_LQ1403002_SSF"]
+                }]
         }]
 }
