@@ -11,7 +11,7 @@ jobs:
     # All architectures supported
     strategy:
       matrix:
-        arch: ['win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx.11.0-arm64', 'osx.12-arm64']
+        arch: ['win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64']
     
     runs-on: ubuntu-latest
 
