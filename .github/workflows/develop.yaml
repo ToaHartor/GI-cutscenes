@@ -39,12 +39,14 @@ jobs:
           dotnet publish -c Release -r "${{ matrix.arch }}" -o "$release_name" --self-contained false -p:PublishTrimmed=false
 
           if [ "${{ matrix.arch }}" == "win-x64" ]; then
+            archive_type="zip"
             # Pack for standalone version
             7z a -tzip "${release_name_standalone}.zip" "./${release_name_standalone}/*"
             
             # Pack for Framework dependant version
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
+            archive_type="tar.gz"
             tar czvf "${release_name_standalone}.tar.gz" "$release_name_standalone"
             
             tar czvf "${release_name}.tar.gz" "$release_name"
@@ -52,12 +54,20 @@ jobs:
 
           rm -r "$release_name_standalone"
           rm -r "$release_name"
+
+          echo "zip_standalone=${release_name_standalone}.${archive_type}" >> $GITHUB_ENV
+          echo "zip_native=${release_name}.${archive_type}" >> $GITHUB_ENV
         
-      - name: 'Upload Artifact'
+      - name: 'Upload standalone build'
         uses: actions/upload-artifact@v4
         with:
-          name: my-artifact
-          path: |
-            GICutscenes-*.zip
-            GICutscenes-*.tar.gz
+          name: ${{ env.zip_standalone }}
+          path: ${{ env.zip_standalone }}
+          retention-days: 7
+
+      - name: 'Upload native build'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.zip_native }}
+          path: ${{ env.zip_native }}
           retention-days: 7
