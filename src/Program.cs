@@ -1,4 +1,4 @@
-﻿using GICutscenes.FileTypes;
+using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
 using GICutscenes.Utils;
@@ -21,6 +21,7 @@ namespace GICutscenes
         public string? SubsStyle { get; set; }
 
     }
+
     internal sealed class Program
     {
         public static Settings? settings;
@@ -30,7 +31,7 @@ namespace GICutscenes
         {
 
             // CLI Options
-            var demuxFileOption = new Argument<FileInfo?>(
+            var demuxFileArg = new Argument<FileInfo>(
                 name: "Input file",
                 description: "The file to read and display on the console.");
 
@@ -42,17 +43,18 @@ namespace GICutscenes
                 name: "HCA Input",
                 description: "File or directory to be processed.");
 
-            var outputFolderOption = new Option<DirectoryInfo?>(
+            var outputFolderOption = new Option<DirectoryInfo>(
                 name: "--output",
-                description: "Output folder, default is './output'."
+                description: "Output folder, default is './output'.",
+                getDefaultValue: () => new DirectoryInfo("./output")
                 );
             outputFolderOption.AddAlias("-o");
 
-            var key1Option = new Option<string?>(
+            var key1Option = new Option<string>(
                 name: "-a",
                 description: "4 lower bytes of the key");
 
-            var key2Option = new Option<string?>(
+            var key2Option = new Option<string>(
                 name: "-b",
                 description: "4 higher bytes of the key");
 
@@ -119,9 +121,9 @@ namespace GICutscenes
 
             rootCommand.AddGlobalOption(stackTraceOption);
 
-            var demuxUsmCommand = new Command("demuxUsm", "Demuxes a specified .usm file to a specified folder")
+            var demuxUsmCommand = new Command("demux-usm", "Demuxes a specified .usm file to a specified folder")
             {
-                demuxFileOption,
+                demuxFileArg,
                 key1Option,
                 key2Option,
                 subsOption,
@@ -134,7 +136,7 @@ namespace GICutscenes
                 audioLangOption
             };
 
-            var batchDemuxCommand = new Command("batchDemux", "Tries to demux all .usm files in the specified folder")
+            var batchDemuxCommand = new Command("batch-demux", "Tries to demux all .usm files in the specified folder")
             {
                 usmFolderArg,
                 subsOption,
@@ -149,7 +151,7 @@ namespace GICutscenes
 
             //var hcaDecrypt = new Command();
 
-            var convertHcaCommand = new Command("convertHca", "Converts input .hca files into .wav files")
+            var convertHcaCommand = new Command("convert-hca", "Converts input .hca files into .wav files")
             {
                 hcaInputArg,
                 outputFolderOption,
@@ -171,25 +173,24 @@ namespace GICutscenes
 
 
             // Command Handlers
-            demuxUsmCommand.SetHandler((FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang) =>
+            demuxUsmCommand.SetHandler((demuxFileArgValue, demuxOptions) =>
             {
                 ReadSetting();
-                output ??= new DirectoryInfo("./output");
-                output.Create();
-                DemuxUsmCommand(file, key1, key2, output, engine, merge, subs, noCleanup, audioFormat, videoFormat, audioLang);
-            }, demuxFileOption, key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption, audioLangOption);
+                demuxOptions.output.Create();
+                DemuxUsmCommand(demuxFileArgValue, demuxOptions); // key1, key2, output, engine, merge, subs, noCleanup, audioFormat, videoFormat, audioLang);
+            }, demuxFileArg, new DemuxOptionsBinder(key1Option, key2Option, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption, audioLangOption));
 
-
-            batchDemuxCommand.SetHandler((DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang) =>
+            // DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang
+            batchDemuxCommand.SetHandler((inputDir, batchDemuxOptions) =>
             {
-                ReadSetting();
-                outputDir ??= new DirectoryInfo("./output");
-                outputDir.Create();
-                var timer = Stopwatch.StartNew();
-                BatchDemuxCommand(inputDir, outputDir, engine, merge, subs, noCleanup, audioFormat, videoFormat, audioLang);
-                timer.Stop();
-                Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
-            }, usmFolderArg, outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption, audioLangOption);
+               ReadSetting();
+               batchDemuxOptions.output ??= new DirectoryInfo("./output"); 
+               batchDemuxOptions.output.Create();
+               var timer = Stopwatch.StartNew();
+               BatchDemuxCommand(inputDir, batchDemuxOptions);
+               timer.Stop();
+               Console.WriteLine($"{timer.ElapsedMilliseconds}ms elapsed");
+            }, usmFolderArg, new BatchDemuxOptionsBinder(outputFolderOption, mkvEngineOption, mergeOption, subsOption, noCleanupOption, audioFormatOption, videoFormatOption, audioLangOption));
 
             convertHcaCommand.SetHandler((FileSystemInfo input, DirectoryInfo? output) =>
             {
@@ -260,23 +261,28 @@ namespace GICutscenes
             }
         }
 
-        private static void DemuxUsmCommand(FileInfo file, string key1, string key2, DirectoryInfo? output, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang)
+        private static void DemuxUsmCommand(FileInfo file, DemuxOptions demuxOptions)
         {
             if (file == null) throw new ArgumentNullException(nameof(file), "No file provided.");
             if (!file.Exists) throw new ArgumentException("File {0} does not exist.", file.Name);
             if (!file.Name.EndsWith(".usm"))
                 throw new ArgumentException($"File {file.Name} provided isn't a .usm file.");
-            if (key1 != null && key2 != null && (key1.Length != 8 || key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
-            string outputArg = output == null
+            if (demuxOptions.key1 != null && demuxOptions.key2 != null && (demuxOptions.key1.Length != 8 || demuxOptions.key2.Length != 8)) throw new ArgumentException("Keys are invalid.");
+            string outputArg = demuxOptions.output == null
                 ? file.Directory!.FullName
-                : ((output.Exists) ? output.FullName : throw new ArgumentException("Output directory is invalid."));
+                : ((demuxOptions.output.Exists) ? demuxOptions.output.FullName : throw new ArgumentException("Output directory is invalid."));
             Console.WriteLine($"Output folder : {outputArg}");
-            byte[] key1Arg = Convert.FromHexString(key1 ?? "");
-            byte[] key2Arg = Convert.FromHexString(key2 ?? "");
+            byte[] key1Arg = Convert.FromHexString(demuxOptions.key1 ?? "");
+            byte[] key2Arg = Convert.FromHexString(demuxOptions.key2 ?? "");
             Demuxer.Demux(file.FullName, key1Arg, key2Arg, outputArg);
+
+            bool merge = demuxOptions.merge.GetValueOrDefault(false);
+            bool noCleanup = demuxOptions.noCleanup.GetValueOrDefault(false);
+            bool mergeSubs = demuxOptions.subs.GetValueOrDefault(false);
+
             if (merge)
             {
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), engine, subs, audioFormat, videoFormat, audioLang);
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName), demuxOptions.engine, mergeSubs, demuxOptions.audioFormat, demuxOptions.videoFormat, demuxOptions.audioLang);
                 if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(file.FullName));
             }
             if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
@@ -285,23 +291,24 @@ namespace GICutscenes
             }
         }
 
-        private static void BatchDemuxCommand(DirectoryInfo inputDir, DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang)
+        // DirectoryInfo? outputDir, string engine, bool merge, bool subs, bool noCleanup, string audioFormat, string videoFormat, string audioLang
+        private static void BatchDemuxCommand(DirectoryInfo inputDir, BatchDemuxOptions demuxOptions)
         {
             if (inputDir is not { Exists: true }) throw new DirectoryNotFoundException("Input directory is invalid.");
-            string outputArg = (outputDir == null)
+            string outputArg = (demuxOptions.output == null)
                 ? inputDir.FullName
-                : ((outputDir.Exists) ? outputDir.FullName : throw new ArgumentException("Output directory is invalid."));
+                : ((demuxOptions.output.Exists) ? demuxOptions.output.FullName : throw new ArgumentException("Output directory is invalid."));
             Console.WriteLine($"Output folder : {outputArg}");
             foreach (string f in Directory.EnumerateFiles(inputDir.FullName, "*.usm"))
             {
                 bool demuxed = Demuxer.Demux(f, Array.Empty<byte>(), Array.Empty<byte>(), outputArg);
                 if (!demuxed) continue;
-                if (!merge) continue;
+                if (!demuxOptions.merge.GetValueOrDefault(false)) continue;
 
-                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), engine, subs, audioFormat, videoFormat, audioLang);
-                if (!noCleanup) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
+                MergeFiles(outputArg, Path.GetFileNameWithoutExtension(f), demuxOptions.engine, demuxOptions.subs.GetValueOrDefault(false), demuxOptions.audioFormat, demuxOptions.videoFormat, demuxOptions.audioLang);
+                if (!demuxOptions.noCleanup.GetValueOrDefault(false)) CleanFiles(outputArg, Path.GetFileNameWithoutExtension(f));
             }
-            if (!noCleanup && Directory.Exists(Path.Combine(outputArg, "Subs")))
+            if (!demuxOptions.noCleanup.GetValueOrDefault(false) && Directory.Exists(Path.Combine(outputArg, "Subs")))
             {
                 Directory.Delete(Path.Combine(outputArg, "Subs"), true);
             }
@@ -335,9 +342,10 @@ namespace GICutscenes
             }
         }
 
-        private static void MergeFiles(string outputPath, string basename, string engine, bool subs, string audioFormat, string videoFormat, string audioLang)
+        private static void MergeFiles(string outputPath, string basename, string? engine, bool subs, string audioFormat, string videoFormat, string audioLang)
         {
             Merger merger;
+            // If either audio or video format is defined, use ffmpeg
             if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
             {
                 engine = "ffmpeg";
