@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using GICutscenes.Utils;
 
 namespace GICutscenes.FileTypes
@@ -17,16 +17,16 @@ namespace GICutscenes.FileTypes
     internal class USM
     {
         private readonly string _filename;
-        private readonly string _path;
+        private readonly FileInfo _file;
         private readonly byte[] _key1;
         private readonly byte[] _key2;
         private byte[] _videoMask1;
         private byte[] _videoMask2;
         private byte[] _audioMask;
-        public USM(string filename, byte[] key1, byte[] key2)
+        public USM(FileInfo file, byte[] key1, byte[] key2)
         {
-            _path = filename;
-            _filename = Path.GetFileName(filename);
+            _file = file;
+            _filename = file.Name;
             _key1 = key1;
             _key2 = key2;
             Console.WriteLine($"key1={Convert.ToHexString(_key1)} key2={Convert.ToHexString(_key2)}");
@@ -104,7 +104,7 @@ namespace GICutscenes.FileTypes
         public Dictionary<string, List<string>> Demux(bool videoExtract, bool audioExtract, string outputDir)
         {
 
-            FileStream filePointer = File.OpenRead(_path);  // TODO: Use a binary reader
+            FileStream filePointer = File.OpenRead(_file.FullName);  // TODO: Use a binary reader
             long fileSize = filePointer.Length;
             Info info = new();
             Console.WriteLine($"Demuxing {_filename} : extracting video and audio...");
