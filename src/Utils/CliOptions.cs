@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.CommandLine;
 
 namespace GICutscenes;
@@ -8,6 +9,31 @@ public static class CliOptions
         name: "--output",
         description: "Output folder",
         getDefaultValue: () => new DirectoryInfo("./output")
+    );
+
+    public static Option<byte[]> HexKey = new Option<byte[]>(
+        name: "--key",
+        description: "USM encryption key (hexadecimal and number format are supported). Overrides options '-a' and '-b'",
+        parseArgument: result =>
+        {
+            string strKey = result.Tokens.Single().Value;
+            // If number only || If hex (0x before or letters A-F)
+            if (
+                ulong.TryParse(strKey, out ulong numKey)
+                || ulong.TryParse(
+                    strKey.StartsWith("0x") ? strKey.Substring(2) : strKey,
+                    System.Globalization.NumberStyles.HexNumber,
+                    null,
+                    out numKey
+                )
+            )
+            {
+                byte[] byteKey = new byte[8];
+                BitConverter.GetBytes(numKey).CopyTo(byteKey, 0);
+                return byteKey;
+            }
+            throw new ArgumentException("Argument --key <key> does not have the right format");
+        }
     );
 
     public static Option<byte[]> Key1 = new Option<byte[]>(

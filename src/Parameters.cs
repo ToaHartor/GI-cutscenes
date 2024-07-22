@@ -7,6 +7,7 @@ namespace GICutscenes
     {
         public required FileSystemInfo input;
         public required DirectoryInfo output;
+        public byte[]? hexKey;
         public byte[]? key1;
         public byte[]? key2;
         public bool merge;
@@ -21,6 +22,7 @@ namespace GICutscenes
     internal sealed class DemuxArgsOptionsBinder(
         Argument<FileSystemInfo> inputArg,
         Option<DirectoryInfo> outputOption,
+        Option<byte[]> hexKeyOption,
         Option<byte[]> key1Option,
         Option<byte[]> key2Option,
         Option<string> mkvEngineOption,
@@ -34,6 +36,7 @@ namespace GICutscenes
     {
         private Argument<FileSystemInfo> InputArg { get; } = inputArg;
         private Option<DirectoryInfo> OutputOption { get; } = outputOption;
+        private Option<byte[]> HexKeyOption { get; } = hexKeyOption;
         private Option<byte[]> Key1Option { get; } = key1Option;
         private Option<byte[]> Key2Option { get; } = key2Option;
         private Option<string> MkvEngineOption { get; } = mkvEngineOption;
@@ -51,6 +54,7 @@ namespace GICutscenes
                 output =
                     bindingContext.ParseResult.GetValueForOption(OutputOption)
                     ?? new DirectoryInfo("./output"),
+                hexKey = bindingContext.ParseResult.GetValueForOption(HexKeyOption),
                 key1 = bindingContext.ParseResult.GetValueForOption(Key1Option),
                 key2 = bindingContext.ParseResult.GetValueForOption(Key2Option),
                 subs = bindingContext.ParseResult.GetValueForOption(SubsOption),

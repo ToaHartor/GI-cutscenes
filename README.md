@@ -97,6 +97,8 @@ Several options are available for most of the commands :
 - `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is automatically changed to FFMPEG**.
 - `--audio-lang` allow to specify audio track language in the output, allowed values are `[chi,eng,jpn,kor]`
 
+For demuxing, a key can be supplied to decrypt the USM file using either the parameter `--key <hex or number>` or `-b <4 lower bytes of key> -a <4 higher bytes of key>`.
+
 Maintenance commands and options:
 
 - `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows :

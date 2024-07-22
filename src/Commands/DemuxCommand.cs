@@ -22,6 +22,7 @@ public class DemuxCommand : Command
 
         CliOptions.Output.AddAlias("-o");
         AddOption(CliOptions.Output);
+        AddOption(CliOptions.HexKey);
         AddOption(CliOptions.Key1);
         AddOption(CliOptions.Key2);
         CliOptions.Subs.AddAlias("--subtitles");
@@ -43,6 +44,7 @@ public class DemuxCommand : Command
         DemuxArgsOptionsBinder demuxArgsOptions = new DemuxArgsOptionsBinder(
             demuxInputArg,
             CliOptions.Output,
+            CliOptions.HexKey,
             CliOptions.Key1,
             CliOptions.Key2,
             CliOptions.MkvEngine,
@@ -65,12 +67,19 @@ public class DemuxCommand : Command
         // Check given arguments and options
         if (!input.Exists)
             throw new ArgumentNullException($"Input path does not exist: {input.FullName}");
+
         DirectoryInfo output = demuxArgsOptions.output;
         if (!output.Exists)
             output.Create();
 
         byte[] key1 = demuxArgsOptions.key1 ?? Array.Empty<byte>();
         byte[] key2 = demuxArgsOptions.key2 ?? Array.Empty<byte>();
+
+        if (demuxArgsOptions.hexKey != null)
+        {
+            key1 = demuxArgsOptions.hexKey[..4];
+            key2 = demuxArgsOptions.hexKey[4..];
+        }
 
         bool merge = demuxArgsOptions.merge;
         bool includeSubs = demuxArgsOptions.subs;

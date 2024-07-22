@@ -167,9 +167,9 @@ namespace GICutscenes
             Dictionary<string, List<string>> filePaths = usmFile.Demux(true, true, output.FullName); // TODO: Return file list for easier parsing
 
             if (!filePaths.TryGetValue("hca", out List<string> hcaPaths))
-                throw new Exception("No HCA files could be demuxed...");
+                Console.WriteLine("No HCA files have been demuxed...");
 
-            Task[] decodingTasks = new Task[hcaPaths.Count];
+            Task[] decodingTasks = new Task[(hcaPaths?.Count) ?? 0];
             for (int i = 0; i < decodingTasks.Length; i++)
             {
                 int j = i;
