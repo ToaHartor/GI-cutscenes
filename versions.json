@@ -320,5 +320,17 @@
                     "version": "14030",
                     "videos": ["Cs_Fontaine_LQ1403002_SSF"]
                 }]
+        }, {
+            "encAudio": true,
+            "version": "4.8",
+            "videoGroups": [{
+                    "key": 9311532710940438,
+                    "version": "40162",
+                    "videos": ["Cs_Fontaine_EQ4016215_FBMH_Boy", "Cs_Fontaine_EQ4016215_FBMH_Girl"]
+                }, {
+                    "key": 0,
+                    "version": "14039",
+                    "videos": ["Cs_Fontaine_LQ1403901_Edg_Boy", "Cs_Fontaine_LQ1403901_Edg_Girl"]
+                }]
         }]
 }
