@@ -332,5 +332,30 @@
                     "version": "14039",
                     "videos": ["Cs_Fontaine_LQ1403901_Edg_Boy", "Cs_Fontaine_LQ1403901_Edg_Girl"]
                 }]
+        },{
+            "encAudio": true,
+            "version": "5.0",
+            "videoGroups": [{
+                    "key": 6659452093751363,
+                    "version": "5001",
+                    "videos": ["Cs_Natlan_AQ50011801_KDM_Boy", "Cs_Natlan_AQ50011801_KDM_Girl"]
+                }, {
+                    "key": 9957859833869437,
+                    "version": "5006",
+                    "videos": ["Cs_Natlan_AQ50061201_YSKJ_Boy", "Cs_Natlan_AQ50061201_YSKJ_Girl"]
+                }, {
+                    "key": 2176081463662665,
+                    "version": "15004",
+                    "videos": ["Cs_Natlan_LQ150041301_SSW_Boy", "Cs_Natlan_LQ150041301_SSW_Girl"]
+                }, {
+                    "key": 6626516507698299,
+                    "version": "5003",
+                    "videos": ["Cs_Natlan_AQ50030601_HDD", "CutScene_Natlan_AQ50030601_HDD"]
+                }, {
+                    "key": 7203629296638087,
+                    "version": "15010",
+                    "videos": ["Cs_Natlan_LQ150100901_DXGS_Boy", "Cs_Natlan_LQ150100901_DXGS_Girl"]
+                }
+			]
         }]
 }
