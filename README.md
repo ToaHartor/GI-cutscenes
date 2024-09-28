@@ -6,12 +6,13 @@ Able to extract the USM files, decrypt the tracks and convert them into readable
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game.
 Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this program's fault).
 
-#### Cutscenes from version 1.0 to 4.8 can be decrypted.
+#### Cutscenes from version 1.0 to 5.0 can be decrypted.
 *Also includes CBT3, which has the same files than the live version*
 
 If you want to extract newer cutscenes but the `versions.json` in the released zip is outdated, simply download the updated file in the project tree ([here](https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json)) and replace the file.
 This file will be updated with the version key every time a new version drops.
 
+If some keys are not available yet, please check the pull requests to see if someone has already submitted them.
 
 ### Feel free to make a pull request if you have some keys unavailable in the versions file, any help is welcome on that part.
 
