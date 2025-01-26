@@ -6,7 +6,7 @@ Able to extract the USM files, decrypt the tracks and convert them into readable
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game.
 Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this program's fault).
 
-#### Cutscenes from version 1.0 to 5.0 can be decrypted.
+#### Cutscenes from version 1.0 to 5.1 can be decrypted.
 
 _Also includes CBT3, which has the same files than the live version_
 
