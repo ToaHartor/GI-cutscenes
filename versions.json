@@ -43,7 +43,8 @@
 				"Video_Reunion_50",
 				"Video_Reunion_51",
 				"Video_Reunion_52",
-				"Video_Reunion_53"
+				"Video_Reunion_53",
+				"Video_Reunion_54"
 			]
 		},
 		{
@@ -829,6 +830,28 @@
 						"Cs_Liyue_EQ401860901_HDJ1",
 						"Cs_Liyue_EQ401861501_HDJ2_Boy",
 						"Cs_Liyue_EQ401861501_HDJ2_Girl"
+					]
+				}
+			]
+		},
+		{
+			"version": "5.4",
+			"encAudio": true,
+			"videoGroups": [
+				{
+					"version": "12047",
+					"key": 2471493637809245,
+					"videos": [
+						"Cs_Inazuma_LQ1204713_Mizuki_Boy",
+						"Cs_Inazuma_LQ1204713_Mizuki_Girl"
+					]
+				},
+				{
+					"version": "40192",
+					"key": 4273042982357305,
+					"videos": [
+						"Cs_Activity_4019208_Tigerdream_Boy",
+						"Cs_Activity_4019208_Tigerdream_Girl"
 					]
 				}
 			]
