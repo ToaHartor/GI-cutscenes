@@ -45,7 +45,8 @@
 				"Video_Reunion_52",
 				"Video_Reunion_53",
 				"Video_Reunion_54",
-				"Video_Reunion_55"
+				"Video_Reunion_55",
+        			"Video_Reunion_56"
 			]
 		},
 		{
@@ -875,6 +876,43 @@
 					"videos": [
 						"Cs_Natlan_EQ4017917_NTEQMatch_Boy",
 						"Cs_Natlan_EQ4017917_NTEQMatch_Girl"
+					]
+				}
+			]
+		},
+		{
+			"version": "5.6",
+			"encAudio": true,
+			"videoGroups": [
+				{
+					"version": "_common_",
+					"key": 2436716446725727,
+					"videos": [
+						"Cs_Mengde_AQ60207_BOSSCG_Boy",
+						"Cs_Mengde_AQ60207_BOSSCG_Girl"
+					]
+				},
+				{
+					"version": "602",
+					"key": 9602627639787478,
+					"videos": [
+						"Cs_Mengde_AQ60215_ABDDL_Boy",
+						"Cs_Mengde_AQ60215_ABDDL_Girl"
+					]
+				},
+				{
+					"version": "14046",
+					"key": 8068565642898266,
+					"videos": [
+						"Cs_Fontaine_LQ1404614_LLDJ_Boy",
+						"Cs_Fontaine_LQ1404614_LLDJ_Girl"
+					]
+				},
+				{
+					"version": "40196",
+					"key": 1424360201678374,
+					"videos": [
+						"Cs_Activity_EQ4019604_ATPS"
 					]
 				}
 			]
