@@ -91,21 +91,24 @@ There are 2 different commands available :
 Several options are available for most of the commands :
 
 - `--output` allows to choose the output folder
-- `--merge` adds a merging step, putting the video, the audio (and the subtitles if the `--subs` option is also there) into a single MKV file. Subtitles will be automatically converted to the SSA format and stored in the `Subs` folder in the output directory if the `--no-cleanup` option is entered.
+- `--merge` adds a merging step, putting the video, the audio (and the subtitles if the `--subs` option is also there) into a single MKV file. Subtitles will be automatically converted to the SSA format and stored in the `Subs` folder in the output directory if the `--no-cleanup` option is entered
 - `--no-cleanup` disables the suppression of the extracted files after merging
 - `--mkv-engine` specifies the merging program used (either `internal`, `mkvmerge` or `ffmpeg`, using the internal method by default)
-- `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is automatically changed to FFMPEG**.
+- `--audio-format` and `--video-format` can be used to select codecs. If at least one option is chosen, **the merging engine is automatically changed to FFMPEG**
+- `--audio-bitrate` allows to specify bitrate of the audio stream
+- `--preset` allows to specify ffmpeg's presets for encoders
+- `--crf` allows to specify CRF value for encoders
 - `--audio-lang` allow to specify audio track language in the output, allowed values are `[chi,eng,jpn,kor]`
 
 For demuxing, a key can be supplied to decrypt the USM file using either the parameter `--key <hex or number>` or `-b <4 lower bytes of key> -a <4 higher bytes of key>`.
 
 Maintenance commands and options:
 
-- `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows :
+- `update` retrieves the latest `versions.json` file from the repository and checks if a new version has to be downloaded. It can take several optional parameters as follows:
   - `--no-browser` to not automatically open the browser if a new version is available
   - `--proxy <uri>` to specify a web proxy for the requests
 - `reset` resets the configuration file (`appsettings.json`) to its default state
-- `--stack-trace` enable the stack trace print of errors in the terminal
+- `--stack-trace` `-st` enable the stack trace print of errors in the terminal
 
 ### Examples
 
