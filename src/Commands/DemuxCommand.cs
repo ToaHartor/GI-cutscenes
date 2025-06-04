@@ -37,6 +37,8 @@ public class DemuxCommand : Command
         AddOption(CliOptions.MkvEngine);
         CliOptions.AudioFormat.AddAlias("-af");
         AddOption(CliOptions.AudioFormat);
+        CliOptions.AudioBitrate.AddAlias("-ab");
+        AddOption(CliOptions.AudioBitrate);
         CliOptions.VideoFormat.AddAlias("-vf");
         AddOption(CliOptions.VideoFormat);
         CliOptions.Preset.AddAlias("-p");
@@ -55,6 +57,7 @@ public class DemuxCommand : Command
             CliOptions.Subs,
             CliOptions.NoCleanup,
             CliOptions.AudioFormat,
+            CliOptions.AudioBitrate,
             CliOptions.VideoFormat,
             CliOptions.Preset,
             CliOptions.Crf,
@@ -90,6 +93,7 @@ public class DemuxCommand : Command
         bool includeSubs = demuxArgsOptions.subs;
         bool noCleanup = demuxArgsOptions.noCleanup;
         string audioFormat = demuxArgsOptions.audioFormat;
+        string audioBitrate = demuxArgsOptions.audioBitrate;
         string videoFormat = demuxArgsOptions.videoFormat;
         string preset = demuxArgsOptions.preset;
         string crf = demuxArgsOptions.crf;
@@ -115,6 +119,7 @@ public class DemuxCommand : Command
                     includeSubs,
                     noCleanup,
                     audioFormat,
+                    audioBitrate,
                     videoFormat,
                     preset,
                     crf,
@@ -139,6 +144,7 @@ public class DemuxCommand : Command
                         includeSubs,
                         noCleanup,
                         audioFormat,
+                        audioBitrate,
                         videoFormat,
                         preset,
                         crf,
@@ -167,6 +173,7 @@ public class DemuxCommand : Command
         bool includeSubs,
         bool noCleanup,
         string audioFormat,
+        string audioBitrate,
         string videoFormat,
         string preset,
         string crf,
@@ -180,7 +187,7 @@ public class DemuxCommand : Command
 
         string basename = Path.GetFileNameWithoutExtension(input.Name);
 
-        MergeFiles(output, basename, mkvEngine, includeSubs, audioFormat, videoFormat, preset, crf, audioLang);
+        MergeFiles(output, basename, mkvEngine, includeSubs, audioFormat, audioBitrate, videoFormat, preset, crf, audioLang);
         if (!noCleanup)
             CleanExtractedFiles(output.FullName, basename);
 
@@ -195,6 +202,7 @@ public class DemuxCommand : Command
         string? engine,
         bool subs,
         string audioFormat,
+        string audioBitrate,
         string videoFormat,
         string preset,
         string crf,
@@ -349,7 +357,7 @@ public class DemuxCommand : Command
         // Merging the file
         if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
         {
-            merger.Merge(audioFormat, videoFormat, preset, crf);
+            merger.Merge(audioFormat, audioBitrate, videoFormat, preset, crf);
         }
         else
         {

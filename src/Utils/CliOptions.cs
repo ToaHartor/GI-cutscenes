@@ -88,6 +88,11 @@ public static class CliOptions
         name: "--audio-format",
         description: "Audio encode format in MKV file, the original is PCM."
     );
+    
+    public static Option<string> AudioBitrate = new Option<string>(
+        name: "--audio-bitrate",
+        description: "Set limit to audio bitrate."
+    );
 
     public static Option<string> VideoFormat = new Option<string>(
         name: "--video-format",

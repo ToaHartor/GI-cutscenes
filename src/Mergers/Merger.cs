@@ -13,7 +13,7 @@
 
         void Merge();
 
-        void Merge(string audioFormat, string videoFormat, string preset, string crf) { }
+        void Merge(string audioFormat, string audioBitrate, string videoFormat, string preset, string crf) { }
 
     }
 }

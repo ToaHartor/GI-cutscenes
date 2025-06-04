@@ -42,7 +42,7 @@ namespace GICutscenes.Mergers
             _inputOptions = new List<string>();
             _mapOptions = new List<string>();
             _metadataOptions = new List<string>();
-            _command = "-y -loglevel quiet -nostats";
+            _command = " -y -loglevel quiet -nostats";
 
         }
 
@@ -59,7 +59,7 @@ namespace GICutscenes.Mergers
             _inputOptions = new List<string>();
             _mapOptions = new List<string>();
             _metadataOptions = new List<string>();
-            _command = "-y -loglevel quiet -nostats";
+            _command = " -y -loglevel quiet -nostats";
         }
 
         public void AddAttachment(string attachment, string description)
@@ -108,12 +108,15 @@ namespace GICutscenes.Mergers
             process.WaitForExit();
         }
 
-        public void Merge(string audioFormat, string videoFormat, string preset, string crf)
+        public void Merge(string audioFormat, string audioBitrate, string videoFormat, string preset, string crf)
         {
-            _command += string.Join(" ", _inputOptions) + string.Join(" ", _mapOptions) + string.Join(" ", _metadataOptions);
+            _command += string.Join("", _inputOptions) + string.Join("", _mapOptions) + string.Join("", _metadataOptions);
             audioFormat = string.IsNullOrWhiteSpace(audioFormat) ? "copy" : audioFormat;
+            _command += $" -c:a {audioFormat}";
+            if (audioFormat != "copy" && !string.IsNullOrWhiteSpace(audioFormat))
+                _command += $" -b:a {audioBitrate}";
             videoFormat = string.IsNullOrWhiteSpace(videoFormat) ? "copy" : videoFormat;
-            _command += $" -c:a {audioFormat} -c:v {videoFormat}";
+            _command += $" -c:v {videoFormat}";
             if (videoFormat != "copy" && !string.IsNullOrWhiteSpace(preset))
                 _command += $" -preset {preset}";
             if (videoFormat != "copy" && !string.IsNullOrWhiteSpace(crf))
