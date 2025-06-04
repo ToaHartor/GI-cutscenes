@@ -316,8 +316,12 @@ public class DemuxCommand : Command
                             ASS sub = new(res, lang);
                             string subFile = search[0];
                             if (!sub.IsAss())
-                                sub.ParseSrt() ? subFile = sub.ConvertToAss(outputPath) : skipSubs = true;
-
+                            {
+                                if (sub.ParseSrt())
+                                    subFile = sub.ConvertToAss(outputPath);
+                                else
+                                    skipSubs = true;
+                            }
                             if (!skipSubs)
                                 merger.AddSubtitlesTrack(subFile, lang);
                             
