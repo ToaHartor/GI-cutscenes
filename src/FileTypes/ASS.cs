@@ -23,7 +23,7 @@ namespace GICutscenes.FileTypes
             return _srt.ToLower().EndsWith(".ass") && (File.ReadLines(_srt).First() == "[Script Info]"); // Lazy checkup
         }
 
-        public void ParseSrt()
+        public bool ParseSrt()
         {
             string subsLines = File.ReadAllText(_srt); // No worries about the encoding, this is smart enough
             string[] splitLines = subsLines.ReplaceLineEndings().Split(Environment.NewLine);
@@ -66,6 +66,12 @@ namespace GICutscenes.FileTypes
                 _dialogLines.Add(dialogLine);
                 i += 1;
             }
+            if (_dialogLines.Count == 0)
+            {
+                Console.WriteLine($"{_srt} file is empty or incorrect");
+                return false;
+            }
+            return true;
         }
 
         public string ConvertToAss(string outputPath)

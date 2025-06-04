@@ -28,9 +28,7 @@ public static class CliOptions
                 )
             )
             {
-                byte[] byteKey = new byte[8];
-                BitConverter.GetBytes(numKey).CopyTo(byteKey, 0);
-                return byteKey;
+                return BitConverter.GetBytes(numKey);
             }
             throw new ArgumentException("Argument --key <key> does not have the right format");
         }
@@ -90,10 +88,25 @@ public static class CliOptions
         name: "--audio-format",
         description: "Audio encode format in MKV file, the original is PCM."
     );
+    
+    public static Option<string> AudioBitrate = new Option<string>(
+        name: "--audio-bitrate",
+        description: "Set limit to audio bitrate."
+    );
 
     public static Option<string> VideoFormat = new Option<string>(
         name: "--video-format",
         description: "Video encode format in MKV file, the original is VP9."
+    );
+    
+    public static Option<string> Preset = new Option<string>(
+        name: "--preset",
+        description: "Preset option for encoders."
+    );
+    
+    public static Option<string> Crf = new Option<string>(
+        name: "--crf",
+        description: "CRF value for commonly used AV1, x265, x264, and vpx encoders."
     );
 
     public static Option<bool> NotOpenBrowser = new Option<bool>(

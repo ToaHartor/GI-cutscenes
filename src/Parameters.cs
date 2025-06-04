@@ -15,7 +15,10 @@ namespace GICutscenes
         public bool subs;
         public bool noCleanup;
         public string? audioFormat;
+        public string? audioBitrate;
         public string? videoFormat;
+        public string? preset;
+        public string? crf;
         public string? audioLang;
     }
 
@@ -30,7 +33,10 @@ namespace GICutscenes
         Option<bool> subsOption,
         Option<bool> noCleanupOption,
         Option<string> audioFormatOption,
+        Option<string> audioBitrateOption,
         Option<string> videoFormatOption,
+        Option<string> presetOption,
+        Option<string> crfOption,
         Option<string> audioLangOption
     ) : BinderBase<DemuxArgsOptions>
     {
@@ -44,7 +50,10 @@ namespace GICutscenes
         private Option<bool> SubsOption { get; } = subsOption;
         private Option<bool> NoCleanupOption { get; } = noCleanupOption;
         private Option<string> AudioFormatOption { get; } = audioFormatOption;
+        private Option<string> AudioBitrateOption { get; } = audioBitrateOption;
         private Option<string> VideoFormatOption { get; } = videoFormatOption;
+        private Option<string> PresetOption { get; } = presetOption;
+        private Option<string> CrfOption { get; } = crfOption;
         private Option<string> AudioLangOption { get; } = audioLangOption;
 
         protected override DemuxArgsOptions GetBoundValue(BindingContext bindingContext) =>
@@ -62,7 +71,10 @@ namespace GICutscenes
                 merge = bindingContext.ParseResult.GetValueForOption(MergeOption),
                 noCleanup = bindingContext.ParseResult.GetValueForOption(NoCleanupOption),
                 audioFormat = bindingContext.ParseResult.GetValueForOption(AudioFormatOption),
+                audioBitrate = bindingContext.ParseResult.GetValueForOption(AudioBitrateOption),
                 videoFormat = bindingContext.ParseResult.GetValueForOption(VideoFormatOption),
+                preset = bindingContext.ParseResult.GetValueForOption(PresetOption),
+                crf = bindingContext.ParseResult.GetValueForOption(CrfOption),
                 audioLang = bindingContext.ParseResult.GetValueForOption(AudioLangOption)
             };
     }

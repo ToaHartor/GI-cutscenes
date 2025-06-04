@@ -2,6 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
+using GICutscenes.Commands;
 using Microsoft.Extensions.Configuration;
 
 namespace GICutscenes
