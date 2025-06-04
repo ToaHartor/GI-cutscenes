@@ -1,7 +1,6 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
@@ -81,7 +80,7 @@ public class DemuxCommand : Command
         byte[] key1 = demuxArgsOptions.key1 ?? Array.Empty<byte>();
         byte[] key2 = demuxArgsOptions.key2 ?? Array.Empty<byte>();
 
-        if (demuxArgsOptions.hexKey != null)
+        if (demuxArgsOptions.hexKey != null && demuxArgsOptions.hexKey.Length > 0)
         {
             key1 = demuxArgsOptions.hexKey[..4];
             key2 = demuxArgsOptions.hexKey[4..];

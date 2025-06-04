@@ -28,9 +28,7 @@ public static class CliOptions
                 )
             )
             {
-                byte[] byteKey = new byte[8];
-                BitConverter.GetBytes(numKey).CopyTo(byteKey, 0);
-                return byteKey;
+                return BitConverter.GetBytes(numKey);
             }
             throw new ArgumentException("Argument --key <key> does not have the right format");
         }
