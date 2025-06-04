@@ -6,7 +6,7 @@ using GICutscenes.FileTypes;
 using GICutscenes.Mergers;
 using GICutscenes.Mergers.GIMKV;
 
-namespace GICutscenes;
+namespace GICutscenes.Commands;
 
 public class DemuxCommand : Command
 {
@@ -40,6 +40,10 @@ public class DemuxCommand : Command
         AddOption(CliOptions.AudioFormat);
         CliOptions.VideoFormat.AddAlias("-vf");
         AddOption(CliOptions.VideoFormat);
+        CliOptions.Preset.AddAlias("-p");
+        AddOption(CliOptions.Preset);
+        CliOptions.Crf.AddAlias("-crf");
+        AddOption(CliOptions.Crf);
 
         DemuxArgsOptionsBinder demuxArgsOptions = new DemuxArgsOptionsBinder(
             demuxInputArg,
@@ -53,6 +57,8 @@ public class DemuxCommand : Command
             CliOptions.NoCleanup,
             CliOptions.AudioFormat,
             CliOptions.VideoFormat,
+            CliOptions.Preset,
+            CliOptions.Crf,
             CliOptions.AudioLang
         );
 
@@ -84,9 +90,10 @@ public class DemuxCommand : Command
         bool merge = demuxArgsOptions.merge;
         bool includeSubs = demuxArgsOptions.subs;
         bool noCleanup = demuxArgsOptions.noCleanup;
-
         string audioFormat = demuxArgsOptions.audioFormat;
         string videoFormat = demuxArgsOptions.videoFormat;
+        string preset = demuxArgsOptions.preset;
+        string crf = demuxArgsOptions.crf;
         string audioLang = demuxArgsOptions.audioLang;
         // TODO : Manage engine depending on the output type
         string engine = demuxArgsOptions.engine;
@@ -110,6 +117,8 @@ public class DemuxCommand : Command
                     noCleanup,
                     audioFormat,
                     videoFormat,
+                    preset,
+                    crf,
                     audioLang
                 );
                 timer.Stop();
@@ -132,6 +141,8 @@ public class DemuxCommand : Command
                         noCleanup,
                         audioFormat,
                         videoFormat,
+                        preset,
+                        crf,
                         audioLang
                     );
                 }
@@ -158,6 +169,8 @@ public class DemuxCommand : Command
         bool noCleanup,
         string audioFormat,
         string videoFormat,
+        string preset,
+        string crf,
         string audioLang
     )
     {
@@ -168,7 +181,7 @@ public class DemuxCommand : Command
 
         string basename = Path.GetFileNameWithoutExtension(input.Name);
 
-        MergeFiles(output, basename, mkvEngine, includeSubs, audioFormat, videoFormat, audioLang);
+        MergeFiles(output, basename, mkvEngine, includeSubs, audioFormat, videoFormat, preset, crf, audioLang);
         if (!noCleanup)
             CleanExtractedFiles(output.FullName, basename);
 
@@ -184,6 +197,8 @@ public class DemuxCommand : Command
         bool subs,
         string audioFormat,
         string videoFormat,
+        string preset,
+        string crf,
         string audioLang
     )
     {
@@ -297,7 +312,6 @@ public class DemuxCommand : Command
                                 ?? throw new FileNotFoundException(
                                     $"No valid file could be found for the subs {subName} while the files corresponding to the name is {search.Length}"
                                 );
-                            ;
                             Console.WriteLine($"Using subs file {Path.GetFileName(res)}");
                             ASS sub = new(res, lang);
                             string subFile = search[0];
@@ -332,7 +346,7 @@ public class DemuxCommand : Command
         // Merging the file
         if (!string.IsNullOrWhiteSpace(audioFormat) || !string.IsNullOrWhiteSpace(videoFormat))
         {
-            merger.Merge(audioFormat, videoFormat);
+            merger.Merge(audioFormat, videoFormat, preset, crf);
         }
         else
         {

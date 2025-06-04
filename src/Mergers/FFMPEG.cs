@@ -108,10 +108,17 @@ namespace GICutscenes.Mergers
             process.WaitForExit();
         }
 
-        public void Merge(string audioFormat, string videoFormat)
+        public void Merge(string audioFormat, string videoFormat, string preset, string crf)
         {
             _command += string.Join(" ", _inputOptions) + string.Join(" ", _mapOptions) + string.Join(" ", _metadataOptions);
-            _command += $" -c:a \"{(string.IsNullOrWhiteSpace(audioFormat) ? "copy" : audioFormat)}\" -c:v \"{(string.IsNullOrWhiteSpace(videoFormat) ? "copy" : videoFormat)}\" \"{_output}\"";
+            audioFormat = string.IsNullOrWhiteSpace(audioFormat) ? "copy" : audioFormat;
+            videoFormat = string.IsNullOrWhiteSpace(videoFormat) ? "copy" : videoFormat;
+            _command += $" -c:a {audioFormat} -c:v {videoFormat}";
+            if (videoFormat != "copy" && !string.IsNullOrWhiteSpace(preset))
+                _command += $" -preset {preset}";
+            if (videoFormat != "copy" && !string.IsNullOrWhiteSpace(crf))
+                _command += $" -crf {crf}";
+            _command += $" \"{_output}\"";
             //Console.WriteLine(_ffmpeg + _command);
             Process process = Process.Start(_ffmpeg, _command);
             process.WaitForExit();
