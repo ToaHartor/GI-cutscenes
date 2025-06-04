@@ -113,7 +113,7 @@ namespace GICutscenes.Mergers
             _command += string.Join("", _inputOptions) + string.Join("", _mapOptions) + string.Join("", _metadataOptions);
             audioFormat = string.IsNullOrWhiteSpace(audioFormat) ? "copy" : audioFormat;
             _command += $" -c:a {audioFormat}";
-            if (audioFormat != "copy" && !string.IsNullOrWhiteSpace(audioFormat))
+            if (audioFormat != "copy" && !string.IsNullOrWhiteSpace(audioBitrate))
                 _command += $" -b:a {audioBitrate}";
             videoFormat = string.IsNullOrWhiteSpace(videoFormat) ? "copy" : videoFormat;
             _command += $" -c:v {videoFormat}";
