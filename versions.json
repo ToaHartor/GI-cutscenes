@@ -46,7 +46,8 @@
 				"Video_Reunion_53",
 				"Video_Reunion_54",
 				"Video_Reunion_55",
-				"Video_Reunion_56"
+				"Video_Reunion_56",
+				"Video_Reunion_57"
 			]
 		},
 		{
@@ -913,6 +914,58 @@
 					"key": 1424360201678374,
 					"videos": [
 						"Cs_Activity_EQ4019604_ATPS"
+					]
+				}
+			]
+		},
+		{
+			"version": "5.7",
+			"encAudio": true,
+			"videoGroups": [
+				{
+					"version": "8018",
+					"key": 7225683477648436,
+					"videos": [
+						"Cs_Natlan_AQ801808_ITTI_Boy",
+						"Cs_Natlan_AQ801808_ITTI_Girl",
+						"Cs_Natlan_AQ801810_CTS_Boy",
+						"Cs_Natlan_AQ801810_CTS_Girl"
+					]
+				},
+				{
+					"version": "15038",
+					"key": 1601161633187932,
+					"videos": [
+						"Cs_Natlan_LQ150380601_VSS_Boy",
+						"Cs_Natlan_LQ150380601_VSS_Girl"
+					]
+				},
+				{
+					"version": "15037",
+					"key": 6581058144706848,
+					"videos": [
+						"Cs_Natlan_LQ150371401_HS"
+					]
+		},
+		{
+		"version": 5.8,
+		"encAudio": true,
+		"videoGroups": [
+				{
+					"version": 15044,
+					"key": TBD,
+					"videos": [
+						"Cs_Natlan_LQ150441801_FMHY",
+						"Cs_Natlan_LQ150441701_WTBY_Girl",
+						"Cs_Natlan_LQ150441701_WTBY_Girl"
+					]
+				},
+				{
+					"version": "6006",
+					"key": TBD,
+					"videos": [
+						"Cs_Natlan_AQ60062001_YNF_Girl",
+						"Cs_Natlan_AQ60062001_YNF_Boy"
 					]
 				}
 			]
