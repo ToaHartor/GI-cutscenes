@@ -410,15 +410,25 @@ namespace GICutscenes
                                 string res = Array.Find(search, name => ASS.SubsExtensions.Contains(Path.GetExtension(name))) ?? throw new FileNotFoundException(
                                                  $"No valid file could be found for the subs {subName} while the files corresponding to the name is {search.Length}"); ;
                                 Console.WriteLine($"Using subs file {Path.GetFileName(res)}");
+                                bool skipSubs = false;
                                 ASS sub = new(res, lang);
                                 string subFile = search[0];
                                 if (!sub.IsAss())
                                 {
-                                    sub.ParseSrt();
-                                    subFile = sub.ConvertToAss(outputPath);
+                                    if (sub.ParseSrt())
+                                    {
+                                        subFile = sub.ConvertToAss(outputPath);
+                                    }
+                                    else
+                                    {
+                                        skipSubs = true;
+                                    }
                                 }
 
-                                merger.AddSubtitlesTrack(subFile, lang);
+                                if (!skipSubs)
+                                {
+                                    merger.AddSubtitlesTrack(subFile, lang);
+                                }
                                 break;
                             default:
                                 throw new Exception($"Too many results ({search.Length}), please report this case");
