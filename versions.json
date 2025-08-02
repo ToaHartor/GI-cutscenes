@@ -48,7 +48,7 @@
 				"Video_Reunion_55",
 				"Video_Reunion_56",
 				"Video_Reunion_57",
-        "Video_Reunion_58"
+                "Video_Reunion_58"
 			]
 		},
 		{
@@ -975,15 +975,5 @@
                 }
             ]
         }
-				},
-				{
-					"version": "15037",
-					"key": 6581058144706848,
-					"videos": [
-						"Cs_Natlan_LQ150371401_HS"
-					]
-				}
-			]
-		}
 	]
 }
