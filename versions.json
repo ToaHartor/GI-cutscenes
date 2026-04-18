@@ -508,7 +508,6 @@
 					"version": "4019",
 					"key": 9183447191069533,
 					"videos": [
-						"Cs_Fontaine_AQ401906_DALW",
 						"Cs_Fontaine_AQ40190601_DALW"
 					]
 				},
@@ -716,8 +715,7 @@
 					"version": "5003",
 					"key": 6626516507698299,
 					"videos": [
-						"Cs_Natlan_AQ50030601_HDD",
-						"CutScene_Natlan_AQ50030601_HDD"
+						"Cs_Natlan_AQ50030601_HDD"
 					]
 				},
 				{
