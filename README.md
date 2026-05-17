@@ -106,7 +106,7 @@ Maintenance commands and options:
 - `GICutscenes -h` displays the help menu
 - `GICutscenes batchDemux "[Game directory]\Genshin Impact game\GenshinImpact_Data\StreamingAssets\VideoAssets\StandaloneWindows64" --output "./output" --merge --subs --no-cleanup` will extract every USM file into the `output` directory, merge them with subtitles in a MKV file and will not cleanup the extracted files
 - `GICutscenes batchDemux cutscenes/ -o ./output -m -s -e ffmpeg` will extract every USM file into the output directory, merging the files (`-m`) and the subs (`-s`) using FFMPEG (`-e`).
-- `GICutscenes demuxUsm hello.usm -b 00112233 -a 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677` and extracts the tracks.
+- `GICutscenes demuxUsm hello.usm -a 00112233 -b 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677` and extracts the tracks.
 - `GICutscenes convertHca hello_0.hca` decodes the file and converts it into a WAV file
 - `GICutscenes demuxUsm "[Path to .usm file]" --merge --subs --audio-lang "jpn,eng"` convert single USM file, include subtitles, include only JPN and ENG audio tracks
 
