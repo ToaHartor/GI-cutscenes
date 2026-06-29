@@ -1229,6 +1229,46 @@
 					]
 				}
 			]
-		}
+		},
+        {
+			"encAudio": true,
+            "version": "6.7",
+            "videoGroups": [
+                {
+					"key": 8364515898595274,
+                    "version": "76132",
+                    "videos": [
+                        "Cs_NodKrai_WQ7613221_HJZL_Girl",
+                        "Cs_NodKrai_WQ7613221_HJZL_Boy",
+                        "Cs_NodKrai_WQ7613220_HJFS_Boy",
+                        "Cs_NodKrai_WQ7613220_HJFS_Girl"
+                    ]
+                },
+                {
+					"key": 4126459040218290,
+                    "version": "40245",
+                    "videos": [
+                        "Cs_FD_EQ402452601_HJ"
+                    ]
+                },
+                {
+					"key": 9533335115327366,
+                    "version": "40246",
+                    "videos": [
+                        "Cs_FD_EQ402460901_FZ_Girl",
+                        "Cs_FD_EQ402460901_FZ_Boy",
+                        "Cs_FD_EQ402461001_BB_Girl",
+                        "Cs_FD_EQ402461001_BB_Boy"
+                    ]
+                },
+                {
+					"key": 1352072859642299,
+                    "version": "_reunion_",
+                    "videos": [
+                        "Video_Reunion_67"
+                    ]
+                }
+            ]
+        }
 	]
 }
