@@ -51,7 +51,9 @@
 				"Video_Reunion_58",
 				"Video_Reunion_60",
 				"Video_Reunion_61",
-				"Video_Reunion_62"
+				"Video_Reunion_62",
+				"Cs_Xm_DrDataPhase_Boy",
+				"Cs_Xm_DrDataPhase_Girl"
 			]
 		},
 		{
@@ -716,8 +718,7 @@
 					"version": "5003",
 					"key": 6626516507698299,
 					"videos": [
-						"Cs_Natlan_AQ50030601_HDD",
-						"CutScene_Natlan_AQ50030601_HDD"
+						"Cs_Natlan_AQ50030601_HDD"
 					]
 				},
 				{
@@ -861,7 +862,6 @@
 						"Cs_Activity_4019208_Tigerdream_Girl"
 					]
 				}
-
 			]
 		},
 		{
@@ -1140,7 +1140,174 @@
 					]
 				}
 			]
+		},
+		{
+			"encAudio": true,
+			"version": "6.4",
+			"videoGroups": [
+				{
+					"version": "40231",
+					"videos": [
+						"Cs_MD_EQ402311501_BD_Girl",
+						"Cs_MD_EQ402311501_BD_Boy"
+					]
+				},
+				{
+					"key": 8755854644844947,
+					"version": "16011",
+					"videos": [
+						"Cs_NodKrai_LQ1601109_LLDZ_Girl",
+						"Cs_NodKrai_LQ1601109_LLDZ_Boy"
+					]
+				},
+				{
+					"key": 2176811386171709,
+					"version": "_reunion_",
+					"videos": [
+						"Video_Reunion_64"
+					]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "6.5",
+			"videoGroups": [
+				{
+					"key": 9588049168495206,
+					"version": "16020",
+					"videos": [
+						"Cs_NodKrai_LQ1602007_BBBJS_Boy",
+						"Cs_NodKrai_LQ1602007_BBBJS_Girl",
+						"Cs_NodKrai_LQ1602013_BBJS_Girl",
+						"Cs_NodKrai_LQ1602013_BBJS_Boy"
+					]
+				},
+				{
+					"key": 3541568626167630,
+					"version": "40238",
+					"videos": [
+						"Cs_NodKrai_EQ4023813_MYZ_Girl",
+						"Cs_NodKrai_EQ4023813_MYZ_Boy"
+					]
+				},
+				{
+					"key": 9668416782901543,
+					"version": "_reunion_",
+					"videos": [ "Video_Reunion_65" ]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "6.6",
+			"videoGroups": [
+				{
+					"key": 6325917348879939,
+					"version": "6036",
+					"videos": [
+						"Cs_NK_AQ603610_BYS",
+						"Cs_NK_AQ603607_BossED1_Boy",
+						"Cs_NK_AQ603607_BossED1_Girl",
+						"Cs_NK_AQ603609_BossED2_Boy",
+						"Cs_NK_AQ603609_BossED2_Girl",
+						"Cs_NK_AQ603612_ATK_Girl",
+						"Cs_NK_AQ603612_ATK_Boy",
+						"Cs_NK_AQ603605_Boss_Boy",
+						"Cs_NK_AQ603605_Boss_Girl"
+					]
+				},
+				{
+					"key": 5350727218328588,
+					"version": "_reunion_",
+					"videos": [
+						"Video_Reunion_66"
+					]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "6.7",
+			"videoGroups": [
+				{
+					"key": 8364515898595274,
+					"version": "76132",
+					"videos": [
+						"Cs_NodKrai_WQ7613221_HJZL_Girl",
+						"Cs_NodKrai_WQ7613221_HJZL_Boy",
+						"Cs_NodKrai_WQ7613220_HJFS_Boy",
+						"Cs_NodKrai_WQ7613220_HJFS_Girl"
+					]
+				},
+				{
+					"key": 4126459040218290,
+					"version": "40245",
+					"videos": [
+						"Cs_FD_EQ402452601_HJ"
+					]
+				},
+				{
+					"key": 9533335115327366,
+					"version": "40246",
+					"videos": [
+						"Cs_FD_EQ402460901_FZ_Girl",
+						"Cs_FD_EQ402460901_FZ_Boy",
+						"Cs_FD_EQ402461001_BB_Girl",
+						"Cs_FD_EQ402461001_BB_Boy"
+					]
+				},
+				{
+					"key": 1352072859642299,
+					"version": "_reunion_",
+					"videos": [
+						"Video_Reunion_67"
+					]
+				}
+			]
+		},
+		{
+			"encAudio": true,
+			"version": "7.0",
+			"videoGroups": [
+				{
+					"key": 6542161829131848,
+					"version": "7008",
+					"videos": [
+						"Cs_ZD_AQ70081401_YD_Boy",
+						"Cs_ZD_AQ70081401_YD_Girl"
+					]
+				},
+				{
+					"key": 4832845766618216,
+					"version": "7009",
+					"videos": [
+						"Cs_ZD_AQ70091101_ED_Boy",
+						"Cs_ZD_AQ70091101_ED_Girl",
+						"Cs_ZD_AQ70091701_DC_Boy",
+						"Cs_ZD_AQ70091701_DC_Girl",
+						"Cs_ZD_AQ70091801_HY"
+					]
+				},
+				{
+					"key": 6030852960564501,
+					"version": "7013",
+					"videos": [
+						"Cs_ZD_AQ70131201_TLBD_Boy",
+						"Cs_ZD_AQ70131201_TLBD_Girl"
+					]
+				},
+				{
+					"key": 6950177611995413,
+					"version": "_reunion_",
+					"videos": [
+						"Video_Reunion_70"
+					]
+				}
+			]
 		}
+
 
 	]
 }
+

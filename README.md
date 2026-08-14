@@ -6,7 +6,7 @@ Able to extract the USM files, decrypt the tracks and convert them into readable
 The final MKV file can then be played like a small movie, with the subtitles correctly formatted like in the game.
 Sometimes, subtitles can be desynchronized with the audio, but that's also the case in game (and not this program's fault).
 
-#### Cutscenes from version 1.0 to 6.3 can be decrypted.
+#### Cutscenes from version 1.0 to 7.0 can be decrypted.
 *Also includes CBT3, which has the same files than the live version*
 
 If you want to extract newer cutscenes but the `versions.json` in the released zip is outdated, simply download the updated file in the project tree ([here](https://raw.githubusercontent.com/ToaHartor/GI-cutscenes/main/versions.json)) and replace the file.
@@ -106,7 +106,7 @@ Maintenance commands and options:
 - `GICutscenes -h` displays the help menu
 - `GICutscenes batchDemux "[Game directory]\Genshin Impact game\GenshinImpact_Data\StreamingAssets\VideoAssets\StandaloneWindows64" --output "./output" --merge --subs --no-cleanup` will extract every USM file into the `output` directory, merge them with subtitles in a MKV file and will not cleanup the extracted files
 - `GICutscenes batchDemux cutscenes/ -o ./output -m -s -e ffmpeg` will extract every USM file into the output directory, merging the files (`-m`) and the subs (`-s`) using FFMPEG (`-e`).
-- `GICutscenes demuxUsm hello.usm -b 00112233 -a 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677` and extracts the tracks.
+- `GICutscenes demuxUsm hello.usm -a 00112233 -b 44556677` decrypts the file `hello.usm` with `key1=00112233` and `key2=44556677` and extracts the tracks.
 - `GICutscenes convertHca hello_0.hca` decodes the file and converts it into a WAV file
 - `GICutscenes demuxUsm "[Path to .usm file]" --merge --subs --audio-lang "jpn,eng"` convert single USM file, include subtitles, include only JPN and ENG audio tracks
 
