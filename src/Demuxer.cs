@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using GICutscenes.FileTypes;
@@ -21,6 +21,9 @@ namespace GICutscenes
         public Version[]? videoGroups { get; set; }
         public ulong? key { get; set; }
         public bool? encAudio { get; set; }
+        // 7.1+ 视频加密组携带：32 个十六进制字符 = AES-128 密钥；
+        // 缺失（null）表示旧版 XOR 体系。新体系下 key 字段承载 audioKey（直接切半，不叠加文件名哈希）。
+        public string? aesKey { get; set; }
     }
     internal class Demuxer
     {
@@ -90,26 +93,119 @@ namespace GICutscenes
             return (key1, key2);
         }
 
+        /// <summary>
+        /// 加载 versions.json，返回 (版本条目, 命中密钥组)；扁平版条目时命中组即条目自身。
+        /// 对应 charlotte 的 find_video。未命中返回 null 并给出与历史一致的警告。
+        /// </summary>
+        private static (Version Entry, Version Group)? FindEntry(string videoFilename)
+        {
+            string versionsFilePath = Path.Combine(AppContext.BaseDirectory, "versions.json");
+            if (!File.Exists(versionsFilePath))
+                throw new FileNotFoundException("File versions.json couldn't be found in the folder of the tool.");
+
+            videoFilename = Path.GetFileNameWithoutExtension(videoFilename);
+            string jsonString = File.ReadAllText(versionsFilePath);
+            VersionList? versions = JsonSerializer.Deserialize<VersionList>(jsonString, VersionJson.Default.VersionList);
+            if (versions?.list == null)
+                throw new JsonException("Json content from versions.json is invalid or couldn't be parsed...");
+
+            foreach (Version entry in versions.list)
+            {
+                if (entry.videos != null && entry.videos.Contains(videoFilename))
+                    return (entry, entry);   // 扁平版：版本条目即密钥组
+
+                if (entry.videoGroups != null)
+                {
+                    Version? group = Array.Find(entry.videoGroups,
+                        g => g.videos != null && g.videos.Contains(videoFilename));
+                    if (group != null) return (entry, group);
+                }
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Unable to find the second key in versions.json for " + videoFilename);
+            Console.ResetColor();
+            return null;
+        }
+
+        /// <summary>
+        /// 版本条目是否属于 7.1 新世代。该世代内没有 aesKey 的组（如 40251、_reunion_）
+        /// 只携带音频密钥：key=audioKey 直接切半喂给 HCA，视频因无 AES 密钥不解密。
+        /// </summary>
+        private static bool IsNewGeneration(Version versionEntry)
+        {
+            // 注意：必须用完全限定名 System.Version，否则解析到本文件的 JSON 模型类 Version
+            return System.Version.TryParse(versionEntry.version, out System.Version? v) && v >= new System.Version(7, 1);
+        }
+
         public static bool Demux(string filenameArg, byte[] key1Arg, byte[] key2Arg, string output)
         {
             if (!File.Exists(filenameArg)) throw new FileNotFoundException($"File {filenameArg} doesn't exist...");
             string filename = Path.GetFileName(filenameArg);
             byte[] key1, key2;
+            USM file;
             if (key1Arg.Length == 0 && key2Arg.Length == 0)
             {
+                // 无手动 key：统一查 versions.json，新旧体系分流均基于命中组的 aesKey
                 Console.WriteLine($"Finding encryption key for {filename}...");
-                (byte[], byte[])? split = KeySplitter(EncryptionKey(filename));
-                if (split == null) return false;
-                key1 = split.Value.Item1;
-                key2 = split.Value.Item2;
+                (Version Entry, Version Group)? found = FindEntry(filename);
+                if (found == null) return false;
+                Version entry = found.Value.Entry;
+                Version group = found.Value.Group;
+
+                if (group.aesKey != null)
+                {
+                    // ===== 7.1 新体系：视频 AES-128-CTR，音频 audioKey（直接切半，不叠加文件名哈希）=====
+                    ulong? nonce = USM.ReadVideoNonce(filenameArg);
+                    if (nonce == null)
+                        throw new InvalidDataException(
+                            $"{filename} matched a 7.1 AES group but no @UTF header/nonce was found (JSON/file mismatch).");
+
+                    (byte[], byte[])? audioSplit = KeySplitter(group.key);
+                    if (audioSplit == null)
+                        throw new JsonException($"7.1 group '{group.version}' is missing its audio key (field 'key').");
+                    key1 = audioSplit.Value.Item1;
+                    key2 = audioSplit.Value.Item2;
+
+                    file = new USM(filenameArg, key1, key2, Convert.FromHexString(group.aesKey), nonce.Value);
+                }
+                else if (IsNewGeneration(entry))
+                {
+                    // ===== 7.1 音频-only 组（40251 / _reunion_）：无 AES 密钥，视频跳过 =====
+                    (byte[], byte[])? audioSplit = KeySplitter(group.key);
+                    if (audioSplit == null)
+                        throw new JsonException($"Audio-only group '{group.version}' is missing its audio key (field 'key').");
+                    key1 = audioSplit.Value.Item1;
+                    key2 = audioSplit.Value.Item2;
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"Group '{group.version}' has no video key: skipping video, extracting audio only.");
+                    Console.ResetColor();
+
+                    file = new USM(filenameArg, key1, key2, videoEncrypted: false);
+                }
+                else
+                {
+                    // ===== 旧体系（common / 2.0~7.0）：文件名滚动哈希 + 组 videoKey，复刻 EncryptionKey =====
+                    ulong filenameKey = EncryptionKeyInFilename(filename);
+                    ulong combined = (filenameKey + (group.key ?? 0)) & 0xFFFFFFFFFFFFFF;
+                    ulong finalKey = combined != 0 ? combined : 0x100000000000000;
+
+                    (byte[], byte[])? split = KeySplitter(finalKey);
+                    if (split == null) return false;
+                    key1 = split.Value.Item1;
+                    key2 = split.Value.Item2;
+                    file = new USM(filenameArg, key1, key2);
+                }
             }
             else
             {
+                // 手动 -a/-b：维持旧 XOR 体系语义（4B+4B 参数无法承载 16B AES 密钥，故不支持 7.1）
                 key1 = key1Arg;
                 key2 = key2Arg;
+                file = new USM(filenameArg, key1, key2);
             }
 
-            USM file = new(filenameArg, key1, key2);
             Dictionary<string, List<string>> filePaths = file.Demux(true, true, output);  // TODO: Return file list for easier parsing
 
             if (!filePaths.TryGetValue("hca", out List<string> hcaPaths)) throw new Exception("No HCA files could be demuxed...");
